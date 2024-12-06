@@ -2,7 +2,7 @@ import { Schedule } from "./Schedule";
 import { System } from "./System";
 
 export class SystemManager {
-    private systems: Map<string, System[]>;
+    private systems: Map<Schedule, System[]>;
 
     constructor() {
         this.systems = new Map<Schedule, System[]>();
@@ -19,5 +19,9 @@ export class SystemManager {
 
     get(schedule: Schedule): System[] | undefined {
         return this.systems.get(schedule);
+    }
+
+    getAll(): System[] {
+        return [...this.systems.values()].flat()
     }
 }

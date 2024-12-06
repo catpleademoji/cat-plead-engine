@@ -1,28 +1,25 @@
 import { Commands } from "./Commands";
 import { EntityManager } from "./EntityManager";
-import { EntityIterator } from "./QueryResult";
+import { EntityIterator, QueryResult } from "./QueryResult";
 import { ResourceManager } from "./ResourceManager";
 import { Resources } from "./Resources";
-import { PostUpdate, PreUpdate, Render, Schedule, Start, Update } from "./Schedule";
+import { Schedule, Start, PreUpdate, Update, PostUpdate, Render, } from "./Schedule";
 import { System } from "./System";
 import { SystemManager } from "./SystemManager";
 import { Time } from "./Time";
-
-export type EntityRecord = {
-    version: number;
-    chunkIndex: number;
-    rowIndex: number;
-}
 
 export class Engine {
     private systems: SystemManager;
     private resources: ResourceManager;
     private entities: EntityManager;
+    private systemQueryResultCache: Map<System, QueryResult>;
 
     constructor() {
         this.systems = new SystemManager();
         this.resources = new ResourceManager();
         this.entities = new EntityManager();
+
+        this.systemQueryResultCache = new Map<System, QueryResult>();
 
         this.update = this.update.bind(this);
     }
@@ -47,6 +44,8 @@ export class Engine {
 
         const commands: Commands = new Commands(this.entities);
         this.addResource("commands", commands);
+
+        this.buildSystemQueryCache();
 
         this.updateSystems(Start);
 
@@ -84,18 +83,34 @@ export class Engine {
             if (!system.query) {
                 system.run();
             } else {
-                // TODO: Cache queries
-
-                const resources = new Resources(this.resources, system.query?.resources);
-
-                const chunks = this.entities.getChunks(system.query);
-
-                const archetype = new Set(system.query.all);
-                const entities = new EntityIterator(archetype, chunks);
-
-                system.run({ resources, entities });
+                const queryResult = this.systemQueryResultCache.get(system)!;
+                if (!queryResult) {
+                    throw new Error("Query result not cached!!!!");
+                }
+                system.run(queryResult);
             }
         })
+    }
+
+    private buildSystemQueryCache() {
+        this.systems.getAll().forEach(system => {
+            if (!system.query) {
+                return;
+            }
+
+            const resources = new Resources(this.resources, system.query?.resources);
+
+            const chunks = this.entities.getChunks(system.query);
+
+            const archetype = new Set(system.query.all);
+            const entities = new EntityIterator(archetype, chunks);
+            const queryResult = {
+                resources,
+                entities
+            };
+
+            this.systemQueryResultCache.set(system, queryResult);
+        });
     }
 }
 

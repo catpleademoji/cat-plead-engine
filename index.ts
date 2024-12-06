@@ -7,6 +7,7 @@ import { Entity } from "./src/Entity";
 import { Commands, Command } from "./src/Commands";
 import * as Schedule from "./src/Schedule";
 import { ComponentAccess } from "./src/ComponentAccess";
+import * as Errors from "./src/Errors";
 
 export {
     Engine,
@@ -19,4 +20,5 @@ export {
     Commands,
     Command,
     ComponentAccess,
+    Errors
 };

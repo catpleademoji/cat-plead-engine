@@ -82,12 +82,16 @@ export class Chunk {
         return row;
     }
 
-    setComponent(index: number, component: string, value: unknown) {
+    hasComponent(component: Component) {
+        return this.componentTable.has(component);
+    }
+
+    setComponent(index: number, component: Component, value: unknown) {
         const column = this.componentTable.get(component)!;
         column[index] = value;
     }
 
-    getComponent(index: number, component: string) {
+    getComponent(index: number, component: Component): unknown {
         return this.componentTable.get(component)![index];
     }
 

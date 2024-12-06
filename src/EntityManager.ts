@@ -1,9 +1,10 @@
 import { Archetype, ArchetypeRecord } from "./Archetype";
 import { Chunk } from "./Chunk";
 import { ComponentValueMap } from "./ComponentValueMap";
-import { EntityRecord } from "./Engine";
+import { EntityRecord } from "./EntityRecord";
 import { Entity } from "./Entity";
 import { Component, Query } from "./Query";
+import { InvalidEntityError } from "./Errors";
 
 export class EntityManager {
     private entities: EntityRecord[];
@@ -27,12 +28,12 @@ export class EntityManager {
         this.count = 0;
     }
 
-    exists(entity?: Entity): boolean {
+    exists(entity: Entity | null): boolean {
         if (!entity) {
             return false;
         }
 
-        if (entity.index <= 0 || entity.index >= this.count) {
+        if (entity.index < 0 || entity.index >= this.count) {
             return false;
         }
 
@@ -93,8 +94,8 @@ export class EntityManager {
     }
 
     spawnFromEntity(entity: Entity): Entity {
-        if (!this.exists(entity as Entity)) {
-            return this.spawnEmpty();
+        if (!this.exists(entity)) {
+            throw new InvalidEntityError();
         }
 
         const record = this.entities[entity.index];
@@ -179,38 +180,42 @@ export class EntityManager {
             };
         }
 
+        this.entities[this.count] = newRecord;
         this.count++;
         return newEntity;
     }
 
-    addComponent(entity: Entity, component: Component) {
+    addComponent(entity: Entity, components: Component | Component[]) {
         if (!this.exists(entity)) {
-            return;
+            throw new InvalidEntityError();
         }
 
         const record = this.entities[entity.index];
         const chunk = this.chunks[record.chunkIndex];
 
-        if (chunk.archetype.components.has(component)) {
+        if (Array.isArray(components)) {
+            if (components.every(component => chunk.archetype.components.has(component))) {
+                return;
+            }
+        } else if (chunk.archetype.components.has(components)) {
             return;
         }
 
         const archetype = new Set(chunk.archetype.components);
-        archetype.add(component);
+        if (Array.isArray(components)) {
+            components.forEach(component => archetype.add(component));
+        } else {
+            archetype.add(components);
+        }
 
-        const chunkIndex = this.getChunk(archetype);
-        const newChunk = this.chunks[chunkIndex];
+        const newChunkIndex = this.getChunk(archetype);
+        const newChunk = this.chunks[newChunkIndex];
 
         // move only copies component values to the other chunk
         const newChunkRow = chunk.move(record.rowIndex, newChunk);
-        this.entities[entity.index] = {
-            version: record.version + 1,
-            chunkIndex: chunkIndex,
-            rowIndex: newChunkRow,
-        };
 
         // we still have to remove the old values
-        const movedEntity = this.chunks[record.chunkIndex].remove(record.rowIndex);
+        const movedEntity = chunk.remove(record.rowIndex);
 
         const movedRecord = this.entities[movedEntity.index];
         this.entities[movedEntity.index] = {
@@ -218,26 +223,27 @@ export class EntityManager {
             chunkIndex: movedRecord.chunkIndex,
             rowIndex: record.rowIndex,
         };
+
+        this.entities[entity.index] = {
+            version: record.version,
+            chunkIndex: newChunkIndex,
+            rowIndex: newChunkRow,
+        };
     }
 
     setComponent(entity: Entity, component: Component, value: unknown) {
-        if (!this.exists(entity)) {
-            return;
+        if (!this.hasComponent(entity, component)) {
+            this.addComponent(entity, component);
         }
 
         const record = this.entities[entity.index];
         const chunk = this.chunks[record.chunkIndex];
-
-        if (!chunk.archetype.components.has(component)) {
-            this.addComponent(entity, component);
-        }
-
         chunk.setComponent(record.rowIndex, component, value);
     }
 
     removeComponent(entity: Entity, component: Component) {
         if (!this.exists(entity)) {
-            return;
+            throw new InvalidEntityError();
         }
 
         const record = this.entities[entity.index];
@@ -254,11 +260,6 @@ export class EntityManager {
 
         // move only copies component values to the other chunk
         const newChunkRow = chunk.move(record.rowIndex, newChunk);
-        this.entities[entity.index] = {
-            version: record.version + 1,
-            chunkIndex: chunkIndex,
-            rowIndex: newChunkRow,
-        };
 
         // we still have to remove the old values
         const movedEntity = this.chunks[record.chunkIndex].remove(record.rowIndex);
@@ -269,6 +270,21 @@ export class EntityManager {
             chunkIndex: movedRecord.chunkIndex,
             rowIndex: record.rowIndex,
         };
+        this.entities[entity.index] = {
+            version: record.version,
+            chunkIndex: chunkIndex,
+            rowIndex: newChunkRow,
+        };
+    }
+
+    hasComponent(entity: Entity, component: Component): boolean {
+        if (!this.exists(entity)) {
+            throw new InvalidEntityError();
+        }
+
+        const record = this.entities[entity.index];
+        const chunk = this.chunks[record.chunkIndex];
+        return chunk.archetype.components.has(component);
     }
 
     private getChunk(archetype: Archetype) {
@@ -280,16 +296,13 @@ export class EntityManager {
             this.archetypeChunkMap.set(archetypeIndex, chunkIndices);
         }
 
-        let chunkIndex = chunkIndices.find(x => x);
-        let newChunk;
-        if (!chunkIndex) {
-            newChunk = new Chunk({ id: archetypeIndex, components: archetype });
+        let chunkIndex = chunkIndices.find(x => this.chunks[x]);
+        if (chunkIndex === undefined) {
             chunkIndex = this.chunks.length;
+            const newChunk = new Chunk({ id: chunkIndex, components: archetype });
 
             this.chunks.push(newChunk);
             chunkIndices.push(chunkIndex);
-        } else {
-            newChunk = this.chunks[chunkIndex];
         }
         return chunkIndex;
     }
@@ -311,7 +324,7 @@ export class EntityManager {
                     return false;
                 }
             }
-            
+
             return true;
         });
         if (archetypeIndex === -1) {
@@ -349,6 +362,7 @@ export class EntityManager {
             rowIndex: 0,
         };
 
+        this.freeEntities.push(entity.index);
         this.count--;
 
         return true;
@@ -367,7 +381,7 @@ export class EntityManager {
             if (!matchedNone) {
                 return false;
             }
-            
+
             return true;
         });
 
@@ -377,5 +391,27 @@ export class EntityManager {
                 return chunkIndices.map(chunkId => this.chunks[chunkId]);
             })
             .flat();
+    }
+
+    getArchetype(entity: Entity): Component[] {
+        if (!this.exists(entity)) {
+            throw new InvalidEntityError();
+        }
+
+        const record = this.entities[entity.index];
+        const chunk = this.chunks[record.chunkIndex];
+
+        return [...chunk.archetype.components];
+    }
+
+    getComponent(entity: Entity, component: Component): unknown | undefined {
+        const record = this.entities[entity.index];
+        const chunk = this.chunks[record.chunkIndex];
+
+        if (!chunk.hasComponent(component)) {
+            return;
+        }
+
+        return chunk.getComponent(record.rowIndex, component);
     }
 }
