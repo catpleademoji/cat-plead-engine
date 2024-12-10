@@ -45,4 +45,8 @@ export class EntityIterator {
       })
     }
   }
+
+  count() {
+    return this.chunks.reduce((sum, chunk) => sum + chunk.count, 0);
+  }
 };

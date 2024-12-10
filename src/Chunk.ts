@@ -9,19 +9,23 @@ export class Chunk {
     readonly archetype: ArchetypeRecord;
     private entities: Entity[];
     private componentTable: Map<Component, unknown[]>;
-    private count: number;
+    private _count: number;
 
     constructor(archetype: ArchetypeRecord) {
         this.archetype = archetype;
         this.entities = [];
-        this.count = 0;
+        this._count = 0;
 
         this.componentTable = new Map<Component, unknown[]>();
         archetype.components.forEach(component => this.componentTable.set(component, []));
     }
 
+    get count() {
+        return this._count;
+    }
+
     add(entity: Entity, components: ComponentValueMap): number {
-        const row = this.count;
+        const row = this._count;
 
         // appends the entity 
         this.entities[row] = entity;
@@ -30,12 +34,12 @@ export class Chunk {
             column[row] = components[component];
         });
 
-        this.count++;
+        this._count++;
         return row;
     }
 
     clone(index: number, entity: Entity): number {
-        const row = this.count;
+        const row = this._count;
 
         // appends the entity 
         this.entities[row] = entity;
@@ -44,12 +48,12 @@ export class Chunk {
             column[row] = column[index];
         });
 
-        this.count++;
+        this._count++;
         return row;
     }
 
     remove(index: number): Entity {
-        const row = this.count - 1;
+        const row = this._count - 1;
 
         // remove by swapping with last element and decrementing count
         this.entities[index] = this.entities[row];
@@ -58,12 +62,12 @@ export class Chunk {
             column[index] = column[row];
         });
 
-        this.count--;
+        this._count--;
         return this.entities[row];
     }
 
     move(index: number, chunk: Chunk): number {
-        const row = chunk.count;
+        const row = chunk._count;
         chunk.entities.push(this.entities[index]);
 
         chunk.archetype.components.forEach(component => {
@@ -77,7 +81,7 @@ export class Chunk {
             }
         });
 
-        chunk.count++;
+        chunk._count++;
 
         return row;
     }
@@ -101,7 +105,7 @@ export class Chunk {
 
     foreach(componentAccess: ComponentAccess, func: EntityForeachCallbackFunc) {
         const record = accessMap.get(componentAccess)!;
-        for (let i = 0; i < this.count; i++) {
+        for (let i = 0; i < this._count; i++) {
             record.rowIndex = i;
             func(componentAccess, this.entities[i]);
         }
