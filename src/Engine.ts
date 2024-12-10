@@ -22,6 +22,15 @@ export class Engine {
         this.systemQueryResultCache = new Map<System, QueryResult>();
 
         this.update = this.update.bind(this);
+
+        const commands: Commands = new Commands(this.entities);
+        this.addResource("commands", commands);
+        const time: Time = {
+            delta: 0,
+            current: 0,
+            start: 0,
+        };
+        this.addResource("time", time);
     }
 
     addResource(name: string, resource: unknown): this {
@@ -35,24 +44,21 @@ export class Engine {
     }
 
     run() {
-        const time: Time = {
-            delta: 0,
-            current: 0,
-            start: 0,
-        };
-        this.addResource("time", time);
-
-        const commands: Commands = new Commands(this.entities);
-        this.addResource("commands", commands);
-
-        this.buildSystemQueryCache();
-
-        this.updateSystems(Start);
-
-        requestAnimationFrame(this.update);
+        this.runStartSystems();
+        typeof requestAnimationFrame !== typeof undefined
+            && requestAnimationFrame(this.update);
     }
 
-    private update(timestamp: DOMHighResTimeStamp) {
+    runStartSystems() {
+        this.buildSystemQueryCache();
+        
+        this.updateSystems(Start);
+
+        const commands = this.resources.get<Commands>("commands")!;
+        this.playbackCommands(commands);
+    }
+
+    update(timestamp: DOMHighResTimeStamp) {
         const time = this.resources.get<Time>("time")!;
         const timestamp_s = timestamp / 1000;
         time.delta = timestamp_s - time.current;
@@ -60,21 +66,22 @@ export class Engine {
 
         const commands = this.resources.get<Commands>("commands")!;
 
-        commands.playback();
+        this.playbackCommands(commands);
         this.updateSystems(PreUpdate);
 
-        commands.playback();
+        this.playbackCommands(commands);
         this.updateSystems(Update);
 
-        commands.playback();
+        this.playbackCommands(commands);
         this.updateSystems(PostUpdate);
 
-        commands.playback();
+        this.playbackCommands(commands);
         this.updateSystems(Render);
 
-        commands.playback();
+        this.playbackCommands(commands);
 
-        requestAnimationFrame(this.update);
+        typeof requestAnimationFrame !== typeof undefined
+            && requestAnimationFrame(this.update);
     }
 
     private updateSystems(schedule: Schedule) {
@@ -85,8 +92,13 @@ export class Engine {
             } else {
                 const queryResult = this.systemQueryResultCache.get(system)!;
                 if (!queryResult) {
-                    throw new Error("Query result not cached!!!!");
+                    throw new Error("Query result not cached!");
                 }
+
+                if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
+                    return;
+                }
+
                 system.run(queryResult);
             }
         })
@@ -98,11 +110,11 @@ export class Engine {
                 return;
             }
 
-            const resources = new Resources(this.resources, system.query?.resources);
+            const resources = new Resources(this.resources, system.query.resources);
 
             const chunks = this.entities.getChunks(system.query);
 
-            const archetype = new Set(system.query.all);
+            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
             const entities = new EntityIterator(archetype, chunks);
             const queryResult = {
                 resources,
@@ -111,6 +123,59 @@ export class Engine {
 
             this.systemQueryResultCache.set(system, queryResult);
         });
+    }
+
+    private playbackCommands(commands: Commands) {
+        commands.playback();
+
+        const dirtyArchetypes = this.entities.getDirtyArchetypes();
+        if (dirtyArchetypes.length === 0) {
+            return;
+        }
+
+        this.systems.getAll().forEach(system => {
+            if (!system.query) {
+                return;
+            }
+
+            let queryResult = this.systemQueryResultCache.get(system);
+            if (queryResult) {
+                const needsUpdate = dirtyArchetypes.some(archetype => {
+                    const matchedAll = system.query?.all?.every(component => archetype.components.has(component))
+                        || true;
+                    if (!matchedAll) {
+                        return false;
+                    }
+
+                    const matchedNone = system.query?.none?.every(component => !archetype.components.has(component))
+                        || true;
+                    if (!matchedNone) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (!needsUpdate) {
+                    return;
+                }
+            }
+
+            const resources = new Resources(this.resources, system.query.resources);
+
+            const chunks = this.entities.getChunks(system.query);
+
+            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+            const entities = new EntityIterator(archetype, chunks);
+            queryResult = {
+                resources,
+                entities
+            };
+
+            this.systemQueryResultCache.set(system, queryResult);
+        });
+
+        this.entities.clearDirtyArchetypes();
     }
 }
 

@@ -2,7 +2,8 @@ import { Resource } from "./Query";
 import { ResourceManager } from "./ResourceManager";
 
 export class Resources {
-    resources: Map<string, unknown>;
+    private resources: Map<string, unknown>;
+
     constructor(resourceManager: ResourceManager, resources?: Resource[]) {
         this.resources = new Map<Resource, unknown>();
 
@@ -21,5 +22,9 @@ export class Resources {
 
     getRW<T>(resource: Resource): T | undefined {
         return this.resources.get(resource) as T;
+    }
+
+    get count() {
+        return this.resources.size;
     }
 }

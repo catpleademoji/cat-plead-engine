@@ -13,6 +13,8 @@ export class EntityManager {
     private chunks: Chunk[];
     private count: number;
 
+    private newArchetypes: ArchetypeRecord[];
+
     private freeEntities: number[];
 
     constructor() {
@@ -24,7 +26,7 @@ export class EntityManager {
         this.chunks = [new Chunk(emptyArchetype)];
         this.archetypeChunkMap = new Map<number, number[]>();
         this.archetypeChunkMap.set(0, [0]);
-
+        this.newArchetypes = [];
         this.count = 0;
     }
 
@@ -327,8 +329,10 @@ export class EntityManager {
 
             return true;
         });
+
         if (archetypeIndex === -1) {
             archetypeIndex = this.archetypes.length;
+            this.newArchetypes.push({ id: archetypeIndex, components: archetype });
             this.archetypes.push({ id: archetypeIndex, components: archetype });
         }
         return archetypeIndex;
@@ -413,5 +417,15 @@ export class EntityManager {
         }
 
         return chunk.getComponent(record.rowIndex, component);
+    }
+
+    getDirtyArchetypes(): ReadonlyArray<ArchetypeRecord> {
+        return this.newArchetypes.map(record => {
+            return this.archetypes[record.id];
+        });
+    }
+
+    clearDirtyArchetypes() {
+        this.newArchetypes.length = 0;
     }
 }
