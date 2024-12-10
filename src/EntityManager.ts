@@ -373,16 +373,18 @@ export class EntityManager {
     }
 
     getChunks(query: Query): Chunk[] {
+        if (!query.all && !query.any && !query.none) {
+            return [];
+        }
+
         const matchedArchetypes = this.archetypes.filter(archetype => {
-            const matchedAll = query.all?.every(component => archetype.components.has(component))
-                || true;
-            if (!matchedAll) {
+            const matchedAll = query.all?.every(component => archetype.components.has(component));
+            if (matchedAll === false) {
                 return false;
             }
 
-            const matchedNone = query.none?.every(component => !archetype.components.has(component))
-                || true;
-            if (!matchedNone) {
+            const matchedNone = query.none?.every(component => !archetype.components.has(component));
+            if (matchedNone === false) {
                 return false;
             }
 

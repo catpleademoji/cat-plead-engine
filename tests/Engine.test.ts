@@ -126,6 +126,68 @@ describe("Engine", () => {
 
             expect(spy).to.have.been.called();
         });
+
+        it("when system has entity query with matching entities with optional components", () => {
+            const initSystem: System = {
+                query: { resources: ["commands"] },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    commands.spawnFromComponents({
+                        "position": { x: 1, y: 0 }
+                    });
+                    commands.spawnEmpty();
+                },
+            };
+
+            const system: System = {
+                query: { any: ["position"] },
+                run(queryResult: QueryResult) {
+                    expect(queryResult.entities.count()).to.equal(2);
+                }
+            };
+
+            const engine = new Engine()
+                .addSystem(Start, initSystem)
+                .addSystem(Update, system);
+
+            const spy = chai.spy.on(system, "run");
+
+            engine.runStartSystems();
+            engine.update(1000 / 60);
+
+            expect(spy).to.have.been.called();
+        });
+
+        it("when system has entity query with matching entities with excluding components", () => {
+            const initSystem: System = {
+                query: { resources: ["commands"] },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    commands.spawnFromComponents({
+                        "position": { x: 1, y: 0 }
+                    });
+                    commands.spawnEmpty();
+                },
+            };
+
+            const system: System = {
+                query: { none: ["position"] },
+                run(queryResult: QueryResult) {
+                    expect(queryResult.entities.count()).to.equal(1);
+                }
+            };
+
+            const engine = new Engine()
+                .addSystem(Start, initSystem)
+                .addSystem(Update, system);
+
+            const spy = chai.spy.on(system, "run");
+
+            engine.runStartSystems();
+            engine.update(1000 / 60);
+
+            expect(spy).to.have.been.called();
+        });
     });
 
     describe("should not run systems on update", () => {
@@ -168,6 +230,51 @@ describe("Engine", () => {
             engine.update(1000 / 60);
 
             expect(spyA).to.not.have.been.called();
+            expect(spyB).to.not.have.been.called();
+        });
+
+        it("when system has entity query with only partially matching entities", () => {
+            type Vector2 = {
+                x: number;
+                y: number;
+            };
+            const systemA: System = {
+                query: { resources: ["commands"] },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    commands.spawnFromComponents({
+                        "position": { x: 0, y: 0 },
+                        "velocity": { x: 0, y: 0 },
+                    });
+                }
+            };
+
+            const systemB: System = {
+                query: { all: ["position", "velocity", "inv_mass"] },
+                run(queryResult: QueryResult) {
+
+                    queryResult.entities.foreach(access => {
+                        const _velocity = access["velocity"] as Vector2;
+                        const _position = access["position"] as Vector2;
+                        access["position"] = {
+                            x: _position.x + _velocity.x,
+                            y: _position.y + _velocity.y,
+                        };
+                    });
+                }
+            };
+
+            const engine = new Engine()
+                .addSystem(Start, systemA)
+                .addSystem(Update, systemB);
+
+            const spyA = chai.spy.on(systemA, "run");
+            const spyB = chai.spy.on(systemB, "run");
+
+            engine.runStartSystems();
+            engine.update(1000 / 60);
+
+            expect(spyA).to.have.been.called();
             expect(spyB).to.not.have.been.called();
         });
     });
