@@ -1,8 +1,8 @@
 import { ComponentValueMap } from "./ComponentValueMap";
-import { Archetype, ArchetypeRecord } from "./Archetype";
+import { ArchetypeRecord } from "./Archetype";
 import { Entity } from "./Entity";
 import { Component } from "./Query";
-import { EntityForeachCallbackFunc } from "./QueryResult";
+import { EntityForeachCallbackFunc } from "./EntityAccess";
 import { accessMap, ComponentAccess } from "./ComponentAccess";
 
 export class Chunk {

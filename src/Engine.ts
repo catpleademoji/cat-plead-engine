@@ -1,6 +1,7 @@
 import { Commands } from "./Commands";
 import { EntityManager } from "./EntityManager";
-import { EntityIterator, QueryResult } from "./QueryResult";
+import { QueryResult } from "./QueryResult";
+import { EntityAccess } from "./EntityAccess";
 import { ResourceManager } from "./ResourceManager";
 import { Resources } from "./Resources";
 import { Schedule, Start, PreUpdate, Update, PostUpdate, Render, } from "./Schedule";
@@ -115,7 +116,7 @@ export class Engine {
             const chunks = this.entities.getChunks(system.query);
 
             const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityIterator(archetype, chunks);
+            const entities = new EntityAccess(this.entities, archetype, chunks);
             const queryResult = {
                 resources,
                 entities
@@ -166,7 +167,7 @@ export class Engine {
             const chunks = this.entities.getChunks(system.query);
 
             const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityIterator(archetype, chunks);
+            const entities = new EntityAccess(this.entities, archetype, chunks);
             queryResult = {
                 resources,
                 entities
