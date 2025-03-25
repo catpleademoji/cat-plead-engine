@@ -14,9 +14,9 @@ export class Engine {
     private resources: ResourceManager;
     private entities: EntityManager;
     private systemQueryResultCache: Map<System, QueryResult>;
-    private updaterFunction: (callback: FrameRequestCallback) => any;
+    private updaterFunction?: (callback: FrameRequestCallback) => any;
 
-    constructor(updaterFunction: (callback: FrameRequestCallback) => any) {
+    constructor(updaterFunction?: (callback: FrameRequestCallback) => any) {
         this.systems = new SystemManager();
         this.resources = new ResourceManager();
         this.entities = new EntityManager();
