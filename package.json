@@ -5,7 +5,7 @@
     "url": "https://catpleademoji.neocities.org"
   },
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.1",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -22,8 +22,7 @@
     "typescript": "^5.8.2"
   },
   "files": [
-    "./src",
-    "./index.ts"
+    "./dist"
   ],
-  "main": "./index.ts"
+  "main": "./dist/index.js"
 }
