@@ -8,7 +8,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.prod.json",
+    "build": "tsc",
     "test": "mocha"
   },
   "devDependencies": {
@@ -22,7 +22,7 @@
     "typescript": "^5.8.2"
   },
   "files": [
-    "./dist/*"
+    "./src"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts"
