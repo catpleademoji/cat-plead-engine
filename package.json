@@ -22,7 +22,8 @@
     "typescript": "^5.8.2"
   },
   "files": [
-    "./src"
+    "./src",
+    "./index.ts"
   ],
-  "main": "./index.js"
+  "main": "./index.ts"
 }
