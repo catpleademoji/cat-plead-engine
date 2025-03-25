@@ -14,8 +14,9 @@ export class Engine {
     private resources: ResourceManager;
     private entities: EntityManager;
     private systemQueryResultCache: Map<System, QueryResult>;
+    private updaterFunction: (callback: FrameRequestCallback) => any;
 
-    constructor() {
+    constructor(updaterFunction: (callback: FrameRequestCallback) => any) {
         this.systems = new SystemManager();
         this.resources = new ResourceManager();
         this.entities = new EntityManager();
@@ -32,6 +33,7 @@ export class Engine {
             start: 0,
         };
         this.addResource("time", time);
+        this.updaterFunction = updaterFunction;
     }
 
     addResource(name: string, resource: unknown): this {
@@ -46,13 +48,18 @@ export class Engine {
 
     run() {
         this.runStartSystems();
-        typeof requestAnimationFrame !== typeof undefined
-            && requestAnimationFrame(this.update);
+        if (!this.updaterFunction) {
+            this.updaterFunction = requestAnimationFrame;
+        }
+       
+        if (this.updaterFunction) {
+            this.updaterFunction(this.update);
+        }
     }
 
     runStartSystems() {
         this.buildSystemQueryCache();
-        
+
         this.updateSystems(Start);
 
         const commands = this.resources.get<Commands>("commands")!;
@@ -81,8 +88,9 @@ export class Engine {
 
         this.playbackCommands(commands);
 
-        typeof requestAnimationFrame !== typeof undefined
-            && requestAnimationFrame(this.update);
+        if (this.updaterFunction) {
+            this.updaterFunction(this.update);
+        }
     }
 
     private updateSystems(schedule: Schedule) {
