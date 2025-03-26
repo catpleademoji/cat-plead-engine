@@ -386,4 +386,35 @@ describe("Engine", () => {
             expect(spyC).to.have.been.called.exactly(2);
         });
     });
+
+    describe("run", () => {
+        it("should run start systems", () => {
+            const startSystem: System = {
+                query: { resources: ["foo"] },
+                run() { }
+            };
+            const updateSystem: System = {
+                query: { resources: ["foo"] },
+                run() { }
+            };
+
+            const startSystemSpy = chai.spy.on(startSystem, "run");
+            const updateSystemSpy = chai.spy.on(updateSystem, "run");
+
+            const engine = new Engine()
+                .addSystem(Start, startSystem)
+                .addSystem(Update, updateSystem)
+                .addResource("foo", {});
+
+            engine.run();
+
+            expect(startSystemSpy).to.have.been.called.once;
+            expect(updateSystemSpy).to.have.not.have.been.called();
+
+            engine.update(0);
+
+            expect(startSystemSpy).to.have.been.called.once;
+            expect(updateSystemSpy).to.have.been.called.once;
+        });
+    });
 });

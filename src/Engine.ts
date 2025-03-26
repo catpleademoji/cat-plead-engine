@@ -48,10 +48,7 @@ export class Engine {
 
     run() {
         this.runStartSystems();
-        if (!this.updaterFunction) {
-            this.updaterFunction = requestAnimationFrame;
-        }
-       
+        
         if (this.updaterFunction) {
             this.updaterFunction(this.update);
         }
