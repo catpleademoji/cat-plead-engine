@@ -16,4 +16,12 @@ export class SystemManager {
     getAll() {
         return [...this.systems.values()].flat();
     }
+    remove(schedule, system) {
+        const systems = this.systems.get(schedule);
+        const filteredSystems = systems.filter(x => x === system);
+        this.systems.set(schedule, filteredSystems);
+    }
+    removeSystems(schedule) {
+        this.systems.set(schedule, []);
+    }
 }

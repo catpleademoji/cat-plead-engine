@@ -6,4 +6,6 @@ export declare class SystemManager {
     add(schedule: Schedule, system: System): void;
     get(schedule: Schedule): System[] | undefined;
     getAll(): System[];
+    remove(schedule: Schedule, system: System): void;
+    removeSystems(schedule: Schedule): void;
 }

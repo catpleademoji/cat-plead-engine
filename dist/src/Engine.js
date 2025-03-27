@@ -5,8 +5,9 @@ import { ResourceManager } from "./ResourceManager";
 import { Resources } from "./Resources";
 import { Start, PreUpdate, Update, PostUpdate, Render, } from "./Schedule";
 import { SystemManager } from "./SystemManager";
+import { DefaultRunner } from "./Runner";
 export class Engine {
-    constructor(updaterFunction) {
+    constructor(runner) {
         this.systems = new SystemManager();
         this.resources = new ResourceManager();
         this.entities = new EntityManager();
@@ -20,7 +21,7 @@ export class Engine {
             start: 0,
         };
         this.addResource("time", time);
-        this.updaterFunction = updaterFunction;
+        this.runner = runner || new DefaultRunner();
     }
     addResource(name, resource) {
         this.resources.add(name, resource);
@@ -31,16 +32,13 @@ export class Engine {
         return this;
     }
     run() {
-        this.runStartSystems();
-        if (this.updaterFunction) {
-            this.updaterFunction(this.update);
-        }
-    }
-    runStartSystems() {
         this.buildSystemQueryCache();
-        this.updateSystems(Start);
-        const commands = this.resources.get("commands");
-        this.playbackCommands(commands);
+        const time = this.resources.get("time");
+        time.current = performance.now() / 1000;
+        this.runner.start(this.update);
+    }
+    stop() {
+        this.runner.stop();
     }
     update(timestamp) {
         const time = this.resources.get("time");
@@ -48,6 +46,9 @@ export class Engine {
         time.delta = timestamp_s - time.current;
         time.current = timestamp_s;
         const commands = this.resources.get("commands");
+        this.updateSystems(Start);
+        this.playbackCommands(commands);
+        this.systems.removeSystems(Start);
         this.playbackCommands(commands);
         this.updateSystems(PreUpdate);
         this.playbackCommands(commands);
@@ -57,9 +58,6 @@ export class Engine {
         this.playbackCommands(commands);
         this.updateSystems(Render);
         this.playbackCommands(commands);
-        if (this.updaterFunction) {
-            this.updaterFunction(this.update);
-        }
     }
     updateSystems(schedule) {
         const systems = this.systems.get(schedule);

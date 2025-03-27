@@ -8,15 +8,19 @@ import { Schedule, Start, PreUpdate, Update, PostUpdate, Render, } from "./Sched
 import { System } from "./System";
 import { SystemManager } from "./SystemManager";
 import { Time } from "./Time";
+import { Runner, DefaultRunner } from "./Runner";
 
 export class Engine {
     private systems: SystemManager;
     private resources: ResourceManager;
     private entities: EntityManager;
     private systemQueryResultCache: Map<System, QueryResult>;
-    private updaterFunction?: (callback: FrameRequestCallback) => any;
 
-    constructor(updaterFunction?: (callback: FrameRequestCallback) => any) {
+    private runner: Runner;
+
+    constructor();
+    constructor(runner: Runner);
+    constructor(runner?: Runner) {
         this.systems = new SystemManager();
         this.resources = new ResourceManager();
         this.entities = new EntityManager();
@@ -33,7 +37,7 @@ export class Engine {
             start: 0,
         };
         this.addResource("time", time);
-        this.updaterFunction = updaterFunction;
+        this.runner = runner || new DefaultRunner();
     }
 
     addResource(name: string, resource: unknown): this {
@@ -47,20 +51,15 @@ export class Engine {
     }
 
     run() {
-        this.runStartSystems();
-        
-        if (this.updaterFunction) {
-            this.updaterFunction(this.update);
-        }
+        this.buildSystemQueryCache();
+        const time = this.resources.get<Time>("time")!;
+        time.current = performance.now() / 1000;
+
+        this.runner.start(this.update);
     }
 
-    runStartSystems() {
-        this.buildSystemQueryCache();
-
-        this.updateSystems(Start);
-
-        const commands = this.resources.get<Commands>("commands")!;
-        this.playbackCommands(commands);
+    stop() {
+        this.runner.stop();
     }
 
     update(timestamp: DOMHighResTimeStamp) {
@@ -70,6 +69,10 @@ export class Engine {
         time.current = timestamp_s;
 
         const commands = this.resources.get<Commands>("commands")!;
+
+        this.updateSystems(Start);
+        this.playbackCommands(commands);
+        this.systems.removeSystems(Start);
 
         this.playbackCommands(commands);
         this.updateSystems(PreUpdate);
@@ -84,10 +87,6 @@ export class Engine {
         this.updateSystems(Render);
 
         this.playbackCommands(commands);
-
-        if (this.updaterFunction) {
-            this.updaterFunction(this.update);
-        }
     }
 
     private updateSystems(schedule: Schedule) {

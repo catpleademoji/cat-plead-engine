@@ -9,6 +9,12 @@ import { Start, Update } from "../src/Schedule";
 import { System } from "../src/System";
 import { QueryResult } from "../src/QueryResult";
 import { Commands } from "../src/Commands";
+import { Runner } from "../src/Runner";
+
+const dummyRunner: Runner = {
+    start(callback) {callback(0) }, 
+    stop() { }
+};
 
 describe("Engine", () => {
     describe("should run Start system", () => {
@@ -19,9 +25,9 @@ describe("Engine", () => {
 
             const spy = chai.spy.on(system, "run");
 
-            new Engine()
+            new Engine(dummyRunner)
                 .addSystem(Start, system)
-                .runStartSystems();
+                .run();
 
             expect(spy).to.have.been.called();
         });
@@ -34,10 +40,10 @@ describe("Engine", () => {
 
             const spy = chai.spy.on(system, "run");
 
-            new Engine()
+            new Engine(dummyRunner)
                 .addSystem(Start, system)
                 .addResource("foo", {})
-                .runStartSystems();
+                .run();
 
             expect(spy).to.have.been.called();
         });
@@ -52,9 +58,9 @@ describe("Engine", () => {
 
             const spy = chai.spy.on(system, "run");
 
-            new Engine()
+            new Engine(dummyRunner)
                 .addSystem(Start, system)
-                .runStartSystems();
+                .run();
 
             expect(spy).to.not.have.been.called();
         });
@@ -67,9 +73,9 @@ describe("Engine", () => {
 
             const spy = chai.spy.on(system, "run");
 
-            new Engine()
+            new Engine(dummyRunner)
                 .addSystem(Start, system)
-                .runStartSystems();
+                .run();
 
             expect(spy).to.not.have.been.called();
         });
@@ -82,13 +88,13 @@ describe("Engine", () => {
                 run() { }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addResource("foo", [])
                 .addSystem(Update, system);
 
             const spy = chai.spy.on(system, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spy).to.have.been.called();
@@ -115,13 +121,13 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, initSystem)
                 .addSystem(Update, system);
 
             const spy = chai.spy.on(system, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spy).to.have.been.called();
@@ -146,13 +152,13 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, initSystem)
                 .addSystem(Update, system);
 
             const spy = chai.spy.on(system, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spy).to.have.been.called();
@@ -177,13 +183,13 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, initSystem)
                 .addSystem(Update, system);
 
             const spy = chai.spy.on(system, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spy).to.have.been.called();
@@ -197,12 +203,12 @@ describe("Engine", () => {
                 run() { }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Update, system);
 
             const spy = chai.spy.on(system, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spy).to.not.have.been.called();
@@ -219,14 +225,14 @@ describe("Engine", () => {
                 run() { }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Update, systemA)
                 .addSystem(Update, systemB);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spyA).to.not.have.been.called();
@@ -264,14 +270,14 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, systemA)
                 .addSystem(Update, systemB);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spyA).to.have.been.called();
@@ -310,7 +316,7 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, systemA)
                 .addSystem(Update, systemB)
                 .addSystem(Update, systemC);
@@ -319,7 +325,7 @@ describe("Engine", () => {
             const spyB = chai.spy.on(systemB, "run");
             const spyC = chai.spy.on(systemC, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spyA).to.have.been.called.exactly(1);
@@ -366,7 +372,7 @@ describe("Engine", () => {
                 }
             };
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, systemA)
                 .addSystem(Update, systemB)
                 .addSystem(Update, systemC);
@@ -374,7 +380,7 @@ describe("Engine", () => {
             const spyB = chai.spy.on(systemB, "run");
             const spyC = chai.spy.on(systemC, "run");
 
-            engine.runStartSystems();
+            engine.run();
             engine.update(1000 / 60);
 
             expect(spyB).to.have.been.called.exactly(1);
@@ -401,7 +407,7 @@ describe("Engine", () => {
             const startSystemSpy = chai.spy.on(startSystem, "run");
             const updateSystemSpy = chai.spy.on(updateSystem, "run");
 
-            const engine = new Engine()
+            const engine = new Engine(dummyRunner)
                 .addSystem(Start, startSystem)
                 .addSystem(Update, updateSystem)
                 .addResource("foo", {});
@@ -409,12 +415,12 @@ describe("Engine", () => {
             engine.run();
 
             expect(startSystemSpy).to.have.been.called.once;
-            expect(updateSystemSpy).to.have.not.have.been.called();
+            expect(updateSystemSpy).to.have.been.called.once;
 
             engine.update(0);
 
             expect(startSystemSpy).to.have.been.called.once;
-            expect(updateSystemSpy).to.have.been.called.once;
+            expect(updateSystemSpy).to.have.been.called.twice;
         });
     });
 });
