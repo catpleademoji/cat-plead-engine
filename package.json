@@ -5,7 +5,7 @@
     "url": "https://catpleademoji.neocities.org"
   },
   "private": true,
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -14,9 +14,11 @@
   "devDependencies": {
     "@types/chai": "^5.2.1",
     "@types/chai-spies": "^1.0.6",
+    "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
     "chai": "^5.2.0",
     "chai-spies": "^1.1.0",
+    "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"

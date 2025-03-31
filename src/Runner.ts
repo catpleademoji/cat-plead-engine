@@ -8,17 +8,18 @@ export class DefaultRunner implements Runner {
 
     start(callback: (timestamp: DOMHighResTimeStamp) => void): void {
         this.callback = callback;
-        this.animationFrameId = requestAnimationFrame(this.update);
+        this.update = this.update.bind(this);
+        this.animationFrameId = window.requestAnimationFrame(this.update);
     }
 
     stop(): void {
         if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
+            window.cancelAnimationFrame(this.animationFrameId);
         }
     }
 
     private update(timestamp: DOMHighResTimeStamp) {
         this.callback && this.callback(timestamp);
-        this.animationFrameId = requestAnimationFrame(this.update);
+        this.animationFrameId = window.requestAnimationFrame(this.update);
     }
 }

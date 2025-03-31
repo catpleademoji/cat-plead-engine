@@ -1,5 +1,4 @@
-import { setup } from "mocha";
-import { use, expect, assert } from "chai";
+import { use, expect } from "chai";
 import spies from "chai-spies";
 
 let chai = use(spies);
@@ -12,7 +11,7 @@ import { Commands } from "../src/Commands";
 import { Runner } from "../src/Runner";
 
 const dummyRunner: Runner = {
-    start(callback) {callback(0) }, 
+    start(callback) { callback(0) }, 
     stop() { }
 };
 
@@ -295,7 +294,7 @@ describe("Engine", () => {
             };
 
             const systemB: System = {
-                query: { any: ["position"] },
+                query: { all: ["position"] },
                 run(queryResult: QueryResult) {
                     queryResult.entities.foreach((access) => {
                         const position = access.position as { x: number, y: number };
@@ -326,17 +325,16 @@ describe("Engine", () => {
             const spyC = chai.spy.on(systemC, "run");
 
             engine.run();
+
+            expect(spyA).to.have.been.called.once;
+            expect(spyB).to.have.not.been.called;
+            expect(spyC).to.have.been.called.once;
+
             engine.update(1000 / 60);
 
-            expect(spyA).to.have.been.called.exactly(1);
-            expect(spyB).to.have.been.called.exactly(0);
-            expect(spyC).to.have.been.called.exactly(1);
-
-            engine.update(1000 / 60);
-
-            expect(spyA).to.have.been.called.exactly(1);
-            expect(spyB).to.have.been.called.exactly(1);
-            expect(spyC).to.have.been.called.exactly(2);
+            expect(spyA).to.have.been.called.once;
+            expect(spyB).to.have.been.called.once;
+            expect(spyC).to.have.been.called.twice;
         });
     });
 
@@ -381,15 +379,14 @@ describe("Engine", () => {
             const spyC = chai.spy.on(systemC, "run");
 
             engine.run();
+
+            expect(spyB).to.have.been.called.once;
+            expect(spyC).to.have.been.called.once;
+
             engine.update(1000 / 60);
 
-            expect(spyB).to.have.been.called.exactly(1);
-            expect(spyC).to.have.been.called.exactly(1);
-
-            engine.update(1000 / 60);
-
-            expect(spyB).to.have.been.called.exactly(1);
-            expect(spyC).to.have.been.called.exactly(2);
+            expect(spyB).to.have.been.called.once;
+            expect(spyC).to.have.been.called.twice;
         });
     });
 
