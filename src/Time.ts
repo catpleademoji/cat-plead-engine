@@ -1,5 +1,5 @@
 export type Time = {
-  delta: number;
-  start: number;
-  current: number;
+    delta: number;
+    start: number;
+    current: number;
 };
