@@ -11,7 +11,7 @@ import { Commands } from "../src/Commands";
 import { Runner } from "../src/Runner";
 
 const dummyRunner: Runner = {
-    start(callback) { callback(0) }, 
+    start(callback) { callback(0) },
     stop() { }
 };
 
@@ -284,8 +284,8 @@ describe("Engine", () => {
         });
     });
 
-    describe("should not run system, until entities are created", () => {
-        it("when matching entities are created", () => {
+    describe("should not run systems", () => {
+        it("until entities are created", () => {
             const systemA: System = {
                 query: { resources: ["commands"] },
                 run(queryResult: QueryResult) {
@@ -328,6 +328,65 @@ describe("Engine", () => {
 
             expect(spyA).to.have.been.called.once;
             expect(spyB).to.have.not.been.called;
+            expect(spyC).to.have.been.called.once;
+
+            engine.update(1000 / 60);
+
+            expect(spyA).to.have.been.called.once;
+            expect(spyB).to.have.been.called.once;
+            expect(spyC).to.have.been.called.twice;
+        });
+
+        it("after entities are destroyed", () => {
+            const systemA: System = {
+                query: {
+                    resources: ["commands"],
+                },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    for (let i = 0; i < 100; i++) {
+                        commands.spawnFromComponents({
+                            "position": { x: 10, y: i }
+                        });
+                    }
+                }
+            };
+
+            const systemB: System = {
+                query: { all: ["position"] },
+                run(queryResult: QueryResult) {
+                    queryResult.entities.foreach((access) => {
+                        const position = access.position as { x: number, y: number };
+                    })
+                }
+            };
+
+            const systemC: System = {
+                query: {
+                    resources: ["commands"],
+                    all: ["position"]
+                },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    queryResult.entities.foreach((_, entity) => {
+                        commands.destroyEntity(entity);
+                    });
+                }
+            };
+
+            const engine = new Engine(dummyRunner)
+                .addSystem(Start, systemA)
+                .addSystem(Update, systemB)
+                .addSystem(Update, systemC);
+
+            const spyA = chai.spy.on(systemA, "run");
+            const spyB = chai.spy.on(systemB, "run");
+            const spyC = chai.spy.on(systemC, "run");
+
+            engine.run();
+
+            expect(spyA).to.have.been.called.once;
+            expect(spyB).to.have.been.called.once;
             expect(spyC).to.have.been.called.once;
 
             engine.update(1000 / 60);

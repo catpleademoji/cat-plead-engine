@@ -35,7 +35,7 @@ export class EntityManager {
             return false;
         }
 
-        if (entity.index < 0 || entity.index >= this.count) {
+        if (entity.index < 0 || entity.index >= this.entities.length) {
             return false;
         }
 

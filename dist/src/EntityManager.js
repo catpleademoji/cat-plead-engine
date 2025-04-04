@@ -16,7 +16,7 @@ export class EntityManager {
         if (!entity) {
             return false;
         }
-        if (entity.index < 0 || entity.index >= this.count) {
+        if (entity.index < 0 || entity.index >= this.entities.length) {
             return false;
         }
         const record = this.entities[entity.index];
