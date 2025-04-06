@@ -479,4 +479,67 @@ describe("Engine", () => {
             expect(updateSystemSpy).to.have.been.called.twice;
         });
     });
+
+    describe("should be able to get components in system", () => {
+        it("when reusing entities", () => {
+            const createEntitiesOnStartSystem: System = {
+                query: { resources: ["commands"] },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    for (let i = 0; i < 5; i++) {
+                        commands.spawnFromComponents({
+                            "value": i
+                        });
+                    }
+                }
+            };
+            const updateSystem: System = {
+                query: {
+                    all: ["value"],
+                },
+                run(queryResult: QueryResult) {
+                    queryResult.entities.foreach((_components, entity) => {
+                        const value = queryResult.entities.getComponent(entity, "value");
+                        expect(value).to.not.be.NaN;
+                    });
+                }
+            };
+            const destroyEntitiesSystem: System = {
+                query: {
+                    resources: ["commands"],
+                    all: ["value"],
+                },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+
+                    queryResult.entities.foreach((components, entity) => {
+                        const value = components["value"] as number;
+                        if (value % 2 === 0) {
+                            commands.destroyEntity(entity);
+                        }
+                    });
+                }
+            };
+            const createEntitiesSystem: System = {
+                query: { resources: ["commands"] },
+                run(queryResult: QueryResult) {
+                    const commands = queryResult.resources.get<Commands>("commands")!;
+                    for (let i = 0; i < 2; i++) {
+                        commands.spawnFromComponents({
+                            "value": i * 10
+                        });
+                    }
+                }
+            };
+
+            const engine = new Engine(dummyRunner)
+                .addSystem(Start, createEntitiesOnStartSystem)
+                .addSystem(Update, updateSystem)
+                .addSystem(Update, destroyEntitiesSystem)
+                .addSystem(Update, createEntitiesSystem);
+
+            engine.run();
+            engine.update(0);
+        });
+    });
 });

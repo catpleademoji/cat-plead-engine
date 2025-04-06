@@ -9,6 +9,33 @@ describe("EntityManager", () => {
     const Rotation: Component = "rotation";
     const Scale: Component = "scale";
 
+    it("reusing entity should have newer version", () => {
+        const entityA = sut.spawnEmpty();
+        const entityB = sut.spawnEmpty();
+        const entityC = sut.spawnEmpty();
+        const entityD = sut.spawnEmpty();
+
+        expect(sut.exists(entityA)).to.be.true;
+        expect(sut.exists(entityB)).to.be.true;
+        expect(sut.exists(entityC)).to.be.true;
+        expect(sut.exists(entityD)).to.be.true;
+
+        const result = sut.destroyEntity(entityB);
+        expect(result).to.be.true;
+
+        expect(sut.exists(entityB)).to.be.false;
+
+        const entityBv2 = sut.spawnEmpty();
+        expect(sut.exists(entityBv2)).to.be.true;
+        expect(entityBv2.version).to.be.greaterThan(entityB.version);
+
+        sut.destroyEntity(entityBv2);
+
+        const entityBv3 = sut.spawnEmpty();
+        expect(sut.exists(entityBv3)).to.be.true;
+        expect(entityBv3.version).to.be.greaterThan(entityBv2.version);
+    });
+
     describe("spawnEmpty", () => {
         it("should create an entity with no components", () => {
             const entity = sut.spawnEmpty();

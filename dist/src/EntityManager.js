@@ -47,6 +47,7 @@ export class EntityManager {
                 chunkIndex: chunkIndex,
                 rowIndex: row,
             };
+            this.entities[freeEntity] = newRecord;
         }
         else {
             // create a fresh entity, appending it to list
@@ -60,8 +61,8 @@ export class EntityManager {
                 chunkIndex: chunkIndex,
                 rowIndex: row,
             };
+            this.entities[this.count] = newRecord;
         }
-        this.entities[this.count] = newRecord;
         this.count++;
         return newEntity;
     }
@@ -86,6 +87,7 @@ export class EntityManager {
                 chunkIndex: record.chunkIndex,
                 rowIndex: row,
             };
+            this.entities[freeEntity] = newRecord;
         }
         else {
             // create a fresh entity, appending it to list
@@ -99,8 +101,8 @@ export class EntityManager {
                 chunkIndex: record.chunkIndex,
                 rowIndex: row,
             };
+            this.entities[this.count] = newRecord;
         }
-        this.entities[this.count] = newRecord;
         this.count++;
         return newEntity;
     }
@@ -123,6 +125,7 @@ export class EntityManager {
                 chunkIndex: chunkIndex,
                 rowIndex: row,
             };
+            this.entities[freeEntity] = newRecord;
         }
         else {
             // create a fresh entity, appending it to list
@@ -136,8 +139,8 @@ export class EntityManager {
                 chunkIndex: chunkIndex,
                 rowIndex: row,
             };
+            this.entities[this.count] = newRecord;
         }
-        this.entities[this.count] = newRecord;
         this.count++;
         return newEntity;
     }
