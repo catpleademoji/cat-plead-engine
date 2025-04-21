@@ -45,6 +45,10 @@ export class Engine {
         return this;
     }
 
+    getResource<T>(name: string) {
+        return this.resources.get<T>(name);
+    }
+
     addSystem(schedule: Schedule, system: System): this {
         this.systems.add(schedule, system);
         return this;

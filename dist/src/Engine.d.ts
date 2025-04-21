@@ -10,6 +10,7 @@ export declare class Engine {
     constructor();
     constructor(runner: Runner);
     addResource(name: string, resource: unknown): this;
+    getResource<T>(name: string): T | undefined;
     addSystem(schedule: Schedule, system: System): this;
     run(): void;
     stop(): void;
