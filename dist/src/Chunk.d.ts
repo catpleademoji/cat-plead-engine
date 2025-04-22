@@ -6,8 +6,8 @@ import { EntityForeachCallbackFunc } from "./EntityAccess";
 import { ComponentAccess } from "./ComponentAccess";
 export declare class Chunk {
     readonly archetype: ArchetypeRecord;
-    private entities;
-    private componentTable;
+    private _entities;
+    private _componentTable;
     private _count;
     constructor(archetype: ArchetypeRecord);
     get count(): number;

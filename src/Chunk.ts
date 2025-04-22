@@ -7,17 +7,17 @@ import { accessMap, ComponentAccess } from "./ComponentAccess";
 
 export class Chunk {
     readonly archetype: ArchetypeRecord;
-    private entities: Entity[];
-    private componentTable: Map<Component, unknown[]>;
+    private _entities: Entity[];
+    private _componentTable: Map<Component, unknown[]>;
     private _count: number;
 
     constructor(archetype: ArchetypeRecord) {
         this.archetype = archetype;
-        this.entities = [];
+        this._entities = [];
         this._count = 0;
 
-        this.componentTable = new Map<Component, unknown[]>();
-        archetype.components.forEach(component => this.componentTable.set(component, []));
+        this._componentTable = new Map<Component, unknown[]>();
+        archetype.components.forEach(component => this._componentTable.set(component, []));
     }
 
     get count() {
@@ -28,9 +28,12 @@ export class Chunk {
         const row = this._count;
 
         // appends the entity 
-        this.entities[row] = entity;
+        this._entities[row] = {
+            index: entity.index,
+            version: entity.version,
+        };
         this.archetype.components.forEach(component => {
-            const column = this.componentTable.get(component)!;
+            const column = this._componentTable.get(component)!;
             column[row] = components[component];
         });
 
@@ -42,9 +45,12 @@ export class Chunk {
         const row = this._count;
 
         // appends the entity 
-        this.entities[row] = entity;
+        this._entities[row] = {
+            index: entity.index,
+            version: entity.version
+        };
         this.archetype.components.forEach(component => {
-            const column = this.componentTable.get(component)!;
+            const column = this._componentTable.get(component)!;
             column[row] = column[index];
         });
 
@@ -56,23 +62,26 @@ export class Chunk {
         const row = this._count - 1;
 
         // remove by swapping with last element and decrementing count
-        this.entities[index] = this.entities[row];
+        this._entities[index] = {
+            index: this._entities[row].index,
+            version: this._entities[row].version
+        };
         this.archetype.components.forEach(component => {
-            const column = this.componentTable.get(component)!;
+            const column = this._componentTable.get(component)!;
             column[index] = column[row];
         });
 
         this._count--;
-        return this.entities[row];
+        return this._entities[row];
     }
 
     move(index: number, chunk: Chunk): number {
         const row = chunk._count;
-        chunk.entities.push(this.entities[index]);
+        chunk._entities.push(this._entities[index]);
 
         chunk.archetype.components.forEach(component => {
-            const fromColumn = this.componentTable.get(component);
-            const toColumn = chunk.componentTable.get(component)!;
+            const fromColumn = this._componentTable.get(component);
+            const toColumn = chunk._componentTable.get(component)!;
 
             if (fromColumn) {
                 toColumn[row] = fromColumn[index];
@@ -87,27 +96,27 @@ export class Chunk {
     }
 
     hasComponent(component: Component) {
-        return this.componentTable.has(component);
+        return this._componentTable.has(component);
     }
 
     setComponent(index: number, component: Component, value: unknown) {
-        const column = this.componentTable.get(component)!;
+        const column = this._componentTable.get(component)!;
         column[index] = value;
     }
 
     getComponent(index: number, component: Component): unknown {
-        return this.componentTable.get(component)![index];
+        return this._componentTable.get(component)![index];
     }
 
     getEntity(index: number) {
-        return this.entities[index];
+        return this._entities[index];
     }
 
     foreach(componentAccess: ComponentAccess, func: EntityForeachCallbackFunc) {
         const record = accessMap.get(componentAccess)!;
         for (let i = 0; i < this._count; i++) {
             record.rowIndex = i;
-            func(componentAccess, this.entities[i]);
+            func(componentAccess, this._entities[i]);
         }
     }
 }
