@@ -29,7 +29,7 @@ export class EntityManager {
         return true;
     }
     spawnEmpty() {
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord;
         let newEntity;
         // zero is the index of the empty archetype chunk
@@ -71,7 +71,7 @@ export class EntityManager {
             throw new InvalidEntityError();
         }
         const record = this.entities[entity.index];
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord;
         let newEntity;
         if (freeEntity) {
@@ -107,7 +107,7 @@ export class EntityManager {
         return newEntity;
     }
     spawnFromComponents(components) {
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord;
         let newEntity;
         const archetype = new Set(Object.keys(components));

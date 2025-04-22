@@ -52,7 +52,7 @@ export class EntityManager {
     }
 
     spawnEmpty(): Entity {
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord: EntityRecord;
         let newEntity: Entity;
 
@@ -105,7 +105,7 @@ export class EntityManager {
 
         const record = this.entities[entity.index];
 
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord: EntityRecord;
         let newEntity: Entity;
 
@@ -150,7 +150,7 @@ export class EntityManager {
     }
 
     spawnFromComponents(components: ComponentValueMap): Entity {
-        const freeEntity = this.freeEntities.pop();
+        const freeEntity = this.freeEntities.shift();
         let newRecord: EntityRecord;
         let newEntity: Entity;
 
