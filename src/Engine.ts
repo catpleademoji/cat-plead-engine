@@ -1,12 +1,12 @@
 import { Commands } from "./Commands";
-import { EntityManager } from "./EntityManager";
-import { QueryResult } from "./QueryResult";
-import { EntityAccess } from "./EntityAccess";
-import { ResourceManager } from "./ResourceManager";
-import { Resources } from "./Resources";
-import { Schedule, Start, PreUpdate, Update, PostUpdate, Render, } from "./Schedule";
-import { System } from "./System";
-import { SystemManager } from "./SystemManager";
+import { EntityManager } from "./Entities/EntityManager";
+import { QueryResult } from "./Queries/QueryResult";
+import { EntityAccess } from "./Entities/EntityAccess";
+import { ResourceManager } from "./Resources/ResourceManager";
+import { Resources } from "./Resources/Resources";
+import { Schedule, Start, PreUpdate, Update, PostUpdate, Render, } from "./Systems/Schedule";
+import { System } from "./Systems/System";
+import { SystemManager } from "./Systems/SystemManager";
 import { Time } from "./Time";
 import { Runner, DefaultRunner } from "./Runner";
 

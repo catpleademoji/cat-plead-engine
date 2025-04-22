@@ -1,5 +1,5 @@
-import { Schedule } from "./Schedule";
-import { System } from "./System";
+import { Schedule } from "./Systems/Schedule";
+import { System } from "./Systems/System";
 import { Runner } from "./Runner";
 export declare class Engine {
     private systems;

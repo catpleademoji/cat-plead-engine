@@ -1,4 +1,4 @@
-import { Resource } from "./Query";
+import { Resource } from "../Queries/Query";
 import { ResourceManager } from "./ResourceManager";
 
 export class Resources {

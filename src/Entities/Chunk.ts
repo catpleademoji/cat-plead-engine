@@ -1,7 +1,7 @@
 import { ComponentValueMap } from "./ComponentValueMap";
 import { ArchetypeRecord } from "./Archetype";
 import { Entity } from "./Entity";
-import { Component } from "./Query";
+import { Component } from "../Queries/Query";
 import { EntityForeachCallbackFunc } from "./EntityAccess";
 import { accessMap, ComponentAccess } from "./ComponentAccess";
 

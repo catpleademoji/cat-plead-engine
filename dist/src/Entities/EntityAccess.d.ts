@@ -3,7 +3,7 @@ import { Chunk } from "./Chunk";
 import { ComponentAccess } from "./ComponentAccess";
 import { Entity } from "./Entity";
 import { EntityManager } from "./EntityManager";
-import { Component } from "./Query";
+import { Component } from "../Queries/Query";
 export type EntityForeachCallbackFunc = (components: ComponentAccess, entity: Entity) => void;
 export declare class EntityAccess {
     private entityManager;

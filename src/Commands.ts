@@ -1,7 +1,7 @@
-import { ComponentValueMap } from "./ComponentValueMap";
-import { EntityManager } from "./EntityManager";
-import { Entity } from "./Entity";
-import { Component } from "./Query";
+import { ComponentValueMap } from "./Entities/ComponentValueMap";
+import { EntityManager } from "./Entities/EntityManager";
+import { Entity } from "./Entities/Entity";
+import { Component } from "./Queries/Query";
 
 export interface Command {
     playback(entityManager: EntityManager): void;

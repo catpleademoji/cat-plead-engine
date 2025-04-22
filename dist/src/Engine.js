@@ -1,10 +1,10 @@
 import { Commands } from "./Commands";
-import { EntityManager } from "./EntityManager";
-import { EntityAccess } from "./EntityAccess";
-import { ResourceManager } from "./ResourceManager";
-import { Resources } from "./Resources";
-import { Start, PreUpdate, Update, PostUpdate, Render, } from "./Schedule";
-import { SystemManager } from "./SystemManager";
+import { EntityManager } from "./Entities/EntityManager";
+import { EntityAccess } from "./Entities/EntityAccess";
+import { ResourceManager } from "./Resources/ResourceManager";
+import { Resources } from "./Resources/Resources";
+import { Start, PreUpdate, Update, PostUpdate, Render, } from "./Systems/Schedule";
+import { SystemManager } from "./Systems/SystemManager";
 import { DefaultRunner } from "./Runner";
 export class Engine {
     constructor(runner) {

@@ -2,7 +2,7 @@ import { ArchetypeRecord } from "./Archetype";
 import { Chunk } from "./Chunk";
 import { ComponentValueMap } from "./ComponentValueMap";
 import { Entity } from "./Entity";
-import { Component, Query } from "./Query";
+import { Component, Query } from "../Queries/Query";
 export declare class EntityManager {
     private entities;
     private archetypes;
