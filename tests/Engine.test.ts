@@ -4,9 +4,9 @@ import spies from "chai-spies";
 let chai = use(spies);
 
 import { Engine } from "../src/Engine";
-import { Start, Update } from "../src/Schedule";
-import { System } from "../src/System";
-import { QueryResult } from "../src/QueryResult";
+import { Start, Update } from "../src/Systems/Schedule";
+import { System } from "../src/Systems/System";
+import { QueryResult } from "../src/Queries/QueryResult";
 import { Commands } from "../src/Commands";
 import { Runner } from "../src/Runner";
 

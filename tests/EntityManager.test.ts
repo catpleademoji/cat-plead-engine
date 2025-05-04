@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { EntityManager } from "../src/EntityManager";
-import { Component } from "../src/Query";
+import { EntityManager } from "../src/Entities/EntityManager";
+import { Component } from "../src/Queries/Query";
 import { InvalidEntityError } from "../src/Errors/InvalidEntityError";
 
 describe("EntityManager", () => {

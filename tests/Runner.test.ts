@@ -6,11 +6,16 @@ let chai = use(spies);
 import { DefaultRunner } from "../src/Runner";
 
 describe("DefaultRunner", () => {
+    let window;
     before(() => {
+        window = global.window;
         // @ts-ignore
         global.window = (new JSDOM(``, { pretendToBeVisual: true })).window;
     });
 
+    after(() => {
+        global.window = window;
+    });
 
     it("should run callback", async () => {
         return new Promise((resolve) => {

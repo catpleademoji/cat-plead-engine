@@ -52,48 +52,17 @@ export class EntityManager {
     }
 
     spawnEmpty(): Entity {
-        const freeEntity = this.freeEntities.shift();
-        let newRecord: EntityRecord;
-        let newEntity: Entity;
-
         // zero is the index of the empty archetype chunk
         const chunkIndex = 0;
-        if (freeEntity) {
-            // reuse an old entity
-            const lastVersion = this.entities[freeEntity].version;
-            newEntity = {
-                index: freeEntity,
-                version: lastVersion,
-            };
 
-            const row = this.chunks[chunkIndex].add(newEntity, {});
-
-            newRecord = {
-                version: lastVersion,
-                chunkIndex: chunkIndex,
-                rowIndex: row,
-            };
-
-            this.entities[freeEntity] = newRecord;
-        } else {
-            // create a fresh entity, appending it to list
-            newEntity = {
-                index: this.count,
-                version: 0,
-            };
-
-            const row = this.chunks[chunkIndex].add(newEntity, {});
-
-            newRecord = {
-                version: 0,
-                chunkIndex: chunkIndex,
-                rowIndex: row,
-            };
-
-            this.entities[this.count] = newRecord;
+        const newEntity = this.getEntity();
+        const row = this.chunks[chunkIndex].add(newEntity, {});
+        const newRecord = {
+            version: newEntity.version,
+            chunkIndex: chunkIndex,
+            rowIndex: row,
         }
-
-        this.count++;
+        this.entities[newEntity.index] = newRecord;
 
         return newEntity;
     }
@@ -105,94 +74,31 @@ export class EntityManager {
 
         const record = this.entities[entity.index];
 
-        const freeEntity = this.freeEntities.shift();
-        let newRecord: EntityRecord;
-        let newEntity: Entity;
-
-        if (freeEntity) {
-            // reuse an old entity
-            const lastVersion = this.entities[freeEntity].version;
-            newEntity = {
-                index: freeEntity,
-                version: lastVersion,
-            };
-
-            const row = this.chunks[record.chunkIndex].clone(record.rowIndex, newEntity);
-
-            newRecord = {
-                version: lastVersion,
-                chunkIndex: record.chunkIndex,
-                rowIndex: row,
-            };
-
-            this.entities[freeEntity] = newRecord;
-        } else {
-            // create a fresh entity, appending it to list
-            newEntity = {
-                index: this.count,
-                version: 0,
-            };
-
-            const row = this.chunks[record.chunkIndex].clone(record.rowIndex, newEntity);
-
-            newRecord = {
-                version: 0,
-                chunkIndex: record.chunkIndex,
-                rowIndex: row,
-            };
-            
-            this.entities[this.count] = newRecord;
+        const newEntity = this.getEntity();
+        const row = this.chunks[record.chunkIndex].clone(record.rowIndex, newEntity);
+        const newRecord = {
+            version: newEntity.version,
+            chunkIndex: record.chunkIndex,
+            rowIndex: row,
         }
-
-        this.count++;
+        this.entities[newEntity.index] = newRecord;
 
         return newEntity;
     }
 
     spawnFromComponents(components: ComponentValueMap): Entity {
-        const freeEntity = this.freeEntities.shift();
-        let newRecord: EntityRecord;
-        let newEntity: Entity;
-
         const archetype = new Set(Object.keys(components));
         const chunkIndex = this.getChunk(archetype);
 
-        if (freeEntity) {
-            // reuse an old entity
-            const lastVersion = this.entities[freeEntity].version;
-            newEntity = {
-                index: freeEntity,
-                version: lastVersion,
-            };
-
-            const row = this.chunks[chunkIndex].add(newEntity, components);
-
-            newRecord = {
-                version: lastVersion,
-                chunkIndex: chunkIndex,
-                rowIndex: row,
-            };
-
-            this.entities[freeEntity] = newRecord;
-        } else {
-            // create a fresh entity, appending it to list
-            newEntity = {
-                index: this.count,
-                version: 0,
-            };
-
-            const row = this.chunks[chunkIndex].add(newEntity, components);
-
-            newRecord = {
-                version: 0,
-                chunkIndex: chunkIndex,
-                rowIndex: row,
-            };
-
-            this.entities[this.count] = newRecord;
+        const newEntity = this.getEntity();
+        const row = this.chunks[chunkIndex].add(newEntity, components);
+        const newRecord = {
+            version: newEntity.version,
+            chunkIndex: chunkIndex,
+            rowIndex: row,
         }
+        this.entities[newEntity.index] = newRecord;
 
-        this.count++;
         return newEntity;
     }
 
@@ -296,6 +202,32 @@ export class EntityManager {
         const record = this.entities[entity.index];
         const chunk = this.chunks[record.chunkIndex];
         return chunk.archetype.components.has(component);
+    }
+
+    private getEntity() {
+        let freeEntityIndex = this.freeEntities.shift();
+        while (this.freeEntities.length > 0 && freeEntityIndex === undefined) {
+            freeEntityIndex = this.freeEntities.shift();
+        }
+
+        let entity: Entity;
+        if (freeEntityIndex === undefined) {
+            // create a fresh entity, appending it to list
+            entity = {
+                index: this.count,
+                version: 0,
+            };
+        } else {
+            // reuse an old entity
+            const lastVersion = this.entities[freeEntityIndex].version;
+            entity = {
+                index: freeEntityIndex,
+                version: lastVersion,
+            };
+        }
+
+        this.count++;
+        return entity;
     }
 
     private getChunk(archetype: Archetype) {

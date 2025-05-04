@@ -20,6 +20,7 @@ export declare class EntityManager {
     setComponent(entity: Entity, component: Component, value: unknown): void;
     removeComponent(entity: Entity, component: Component): void;
     hasComponent(entity: Entity, component: Component): boolean;
+    private getEntity;
     private getChunk;
     private getOrAddArchetype;
     destroyEntity(entity: Entity): boolean;

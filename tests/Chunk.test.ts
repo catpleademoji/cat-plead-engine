@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Chunk } from "../src/Chunk";
+import { Chunk } from "../src/Entities/Chunk";
 
 describe("Chunk", () => {
     describe("add", () => {
