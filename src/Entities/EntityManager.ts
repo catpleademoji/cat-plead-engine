@@ -211,7 +211,7 @@ export class EntityManager {
         }
 
         let entity: Entity;
-        if (freeEntityIndex === undefined) {
+        if (freeEntityIndex === undefined || freeEntityIndex > this.count) {
             // create a fresh entity, appending it to list
             entity = {
                 index: this.count,
