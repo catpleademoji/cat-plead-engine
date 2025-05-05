@@ -155,14 +155,11 @@ export class EntityManager {
     }
     getEntity() {
         let freeEntityIndex = this.freeEntities.shift();
-        while (this.freeEntities.length > 0 && freeEntityIndex !== undefined && freeEntityIndex > this.count) {
-            freeEntityIndex = this.freeEntities.shift();
-        }
         let entity;
-        if (freeEntityIndex === undefined || freeEntityIndex > this.count) {
+        if (freeEntityIndex === undefined) {
             // create a fresh entity, appending it to list
             entity = {
-                index: this.count,
+                index: this.entities.length,
                 version: 0,
             };
         }
