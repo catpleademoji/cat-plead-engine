@@ -206,7 +206,7 @@ export class EntityManager {
 
     private getEntity() {
         let freeEntityIndex = this.freeEntities.shift();
-        while (this.freeEntities.length > 0 && freeEntityIndex === undefined) {
+        while (this.freeEntities.length > 0 && freeEntityIndex !== undefined && freeEntityIndex > this.count) {
             freeEntityIndex = this.freeEntities.shift();
         }
 
