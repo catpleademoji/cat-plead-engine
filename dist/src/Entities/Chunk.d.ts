@@ -14,7 +14,7 @@ export declare class Chunk {
     add(entity: Entity, components: ComponentValueMap): number;
     clone(index: number, entity: Entity): number;
     remove(index: number): Entity;
-    move(index: number, chunk: Chunk): number;
+    copyTo(index: number, chunk: Chunk): number;
     hasComponent(component: Component): boolean;
     setComponent(index: number, component: Component, value: unknown): void;
     getComponent(index: number, component: Component): unknown;

@@ -75,9 +75,9 @@ export class Chunk {
         return this._entities[row];
     }
 
-    move(index: number, chunk: Chunk): number {
+    copyTo(index: number, chunk: Chunk): number {
         const row = chunk._count;
-        chunk._entities.push(this._entities[index]);
+        chunk._entities[row] = this._entities[index];
 
         chunk.archetype.components.forEach(component => {
             const fromColumn = this._componentTable.get(component);

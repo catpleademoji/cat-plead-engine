@@ -91,22 +91,7 @@ export class EntityManager {
             archetype.add(components);
         }
         const newChunkIndex = this.getChunk(archetype);
-        const newChunk = this.chunks[newChunkIndex];
-        // move only copies component values to the other chunk
-        const newChunkRow = chunk.move(record.rowIndex, newChunk);
-        // we still have to remove the old values
-        const movedEntity = chunk.remove(record.rowIndex);
-        const movedRecord = this.entities[movedEntity.index];
-        this.entities[movedEntity.index] = {
-            version: movedRecord.version,
-            chunkIndex: movedRecord.chunkIndex,
-            rowIndex: record.rowIndex,
-        };
-        this.entities[entity.index] = {
-            version: record.version,
-            chunkIndex: newChunkIndex,
-            rowIndex: newChunkRow,
-        };
+        this.moveChunk(entity, newChunkIndex);
     }
     setComponent(entity, component, value) {
         if (!this.hasComponent(entity, component)) {
@@ -127,12 +112,18 @@ export class EntityManager {
         }
         const archetype = new Set(chunk.archetype.components);
         archetype.delete(component);
-        const chunkIndex = this.getChunk(archetype);
-        const newChunk = this.chunks[chunkIndex];
-        // move only copies component values to the other chunk
-        const newChunkRow = chunk.move(record.rowIndex, newChunk);
-        // we still have to remove the old values
-        const movedEntity = this.chunks[record.chunkIndex].remove(record.rowIndex);
+        const newChunkIndex = this.getChunk(archetype);
+        this.moveChunk(entity, newChunkIndex);
+    }
+    moveChunk(entity, newChunkIndex) {
+        const record = this.entities[entity.index];
+        const chunk = this.chunks[record.chunkIndex];
+        const newChunk = this.chunks[newChunkIndex];
+        // copies entity component values to the other chunk
+        const newChunkRow = chunk.copyTo(record.rowIndex, newChunk);
+        // remove the entity from old chunk
+        const movedEntity = chunk.remove(record.rowIndex);
+        // update records for the entity and the moved entity 
         const movedRecord = this.entities[movedEntity.index];
         this.entities[movedEntity.index] = {
             version: movedRecord.version,
@@ -141,7 +132,7 @@ export class EntityManager {
         };
         this.entities[entity.index] = {
             version: record.version,
-            chunkIndex: chunkIndex,
+            chunkIndex: newChunkIndex,
             rowIndex: newChunkRow,
         };
     }

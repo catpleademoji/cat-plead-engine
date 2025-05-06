@@ -52,9 +52,9 @@ export class Chunk {
         this._count--;
         return this._entities[row];
     }
-    move(index, chunk) {
+    copyTo(index, chunk) {
         const row = chunk._count;
-        chunk._entities.push(this._entities[index]);
+        chunk._entities[row] = this._entities[index];
         chunk.archetype.components.forEach(component => {
             const fromColumn = this._componentTable.get(component);
             const toColumn = chunk._componentTable.get(component);

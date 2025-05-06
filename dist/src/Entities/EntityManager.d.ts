@@ -19,6 +19,7 @@ export declare class EntityManager {
     addComponent(entity: Entity, components: Component | Component[]): void;
     setComponent(entity: Entity, component: Component, value: unknown): void;
     removeComponent(entity: Entity, component: Component): void;
+    moveChunk(entity: Entity, newChunkIndex: number): void;
     hasComponent(entity: Entity, component: Component): boolean;
     private getEntity;
     private getChunk;
