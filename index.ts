@@ -1,4 +1,4 @@
-import { Engine } from "./src/Engine";
+import { Engine, EngineOptions } from "./src/Engine";
 import { Query } from "./src/Queries/Query";
 import { QueryResult } from "./src/Queries/QueryResult";
 import { System } from "./src/Systems/System";
@@ -12,6 +12,7 @@ import DefaultResources from "./src/Resources/DefaultResources";
 
 export {
     Engine,
+    EngineOptions,
     System,
     Query,
     QueryResult,

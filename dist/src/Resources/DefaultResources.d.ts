@@ -1,5 +1,2 @@
-declare const _default: {
-    Time: string;
-    Commands: string;
-};
+declare const _default: Readonly<Record<string, string>>;
 export default _default;

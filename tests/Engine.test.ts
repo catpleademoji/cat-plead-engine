@@ -16,6 +16,7 @@ const dummyRunner: Runner = {
 };
 
 describe("Engine", () => {
+
     describe("should run Start system", () => {
         it("when system has empty query", () => {
             const system = {
