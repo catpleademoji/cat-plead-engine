@@ -28,6 +28,6 @@ export declare class EntityManager {
     getChunks(query: Query): Chunk[];
     getArchetype(entity: Entity): Component[];
     getComponent(entity: Entity, component: Component): unknown | undefined;
-    getDirtyArchetypes(): ReadonlyArray<ArchetypeRecord>;
-    clearDirtyArchetypes(): void;
+    getNewArchetypes(): ReadonlyArray<ArchetypeRecord>;
+    clearNewArchetypes(): void;
 }

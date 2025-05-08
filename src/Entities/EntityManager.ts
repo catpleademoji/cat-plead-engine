@@ -348,13 +348,13 @@ export class EntityManager {
         return chunk.getComponent(record.rowIndex, component);
     }
 
-    getDirtyArchetypes(): ReadonlyArray<ArchetypeRecord> {
+    getNewArchetypes(): ReadonlyArray<ArchetypeRecord> {
         return this.newArchetypes.map(record => {
             return this.archetypes[record.id];
         });
     }
 
-    clearDirtyArchetypes() {
+    clearNewArchetypes() {
         this.newArchetypes.length = 0;
     }
 }

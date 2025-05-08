@@ -69,6 +69,9 @@ export class Engine {
         this.runner.stop();
     }
     update(timestamp) {
+        if (this.resources.hasUpdates()) {
+            this.updateQueryCacheResources();
+        }
         const time = this.resources.get(DefaultResources.Time);
         const timestamp_s = timestamp / 1000;
         let delta = timestamp_s - time.current;
@@ -134,8 +137,8 @@ export class Engine {
     }
     playbackCommands(commands) {
         commands.playback();
-        const dirtyArchetypes = this.entities.getDirtyArchetypes();
-        if (dirtyArchetypes.length === 0) {
+        const newArchetypes = this.entities.getNewArchetypes();
+        if (newArchetypes.length === 0) {
             return;
         }
         this.systems.getAll().forEach(system => {
@@ -144,7 +147,7 @@ export class Engine {
             }
             let queryResult = this.systemQueryResultCache.get(system);
             if (queryResult) {
-                const needsUpdate = dirtyArchetypes.some(archetype => {
+                const needsUpdate = newArchetypes.some(archetype => {
                     var _a, _b, _c, _d;
                     const matchedAll = ((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.all) === null || _b === void 0 ? void 0 : _b.every(component => archetype.components.has(component)))
                         || true;
@@ -172,6 +175,28 @@ export class Engine {
             };
             this.systemQueryResultCache.set(system, queryResult);
         });
-        this.entities.clearDirtyArchetypes();
+        this.entities.clearNewArchetypes();
+    }
+    updateQueryCacheResources() {
+        const newResources = this.resources.getNewResources();
+        this.systems.getAll().forEach(system => {
+            var _a, _b;
+            if (!((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.resources) === null || _b === void 0 ? void 0 : _b.some(res => newResources.has(res)))) {
+                return;
+            }
+            let queryResult = this.systemQueryResultCache.get(system);
+            if (queryResult) {
+                const resources = new Resources(this.resources, system.query.resources);
+                const chunks = this.entities.getChunks(system.query);
+                const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                const entities = new EntityAccess(this.entities, archetype, chunks);
+                queryResult = {
+                    resources,
+                    entities
+                };
+                this.systemQueryResultCache.set(system, queryResult);
+            }
+        });
+        this.resources.handleUpdates();
     }
 }

@@ -24,4 +24,5 @@ export declare class Engine {
     private updateSystems;
     private buildSystemQueryCache;
     private playbackCommands;
+    private updateQueryCacheResources;
 }

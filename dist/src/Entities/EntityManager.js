@@ -270,12 +270,12 @@ export class EntityManager {
         }
         return chunk.getComponent(record.rowIndex, component);
     }
-    getDirtyArchetypes() {
+    getNewArchetypes() {
         return this.newArchetypes.map(record => {
             return this.archetypes[record.id];
         });
     }
-    clearDirtyArchetypes() {
+    clearNewArchetypes() {
         this.newArchetypes.length = 0;
     }
 }

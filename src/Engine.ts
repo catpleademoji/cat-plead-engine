@@ -98,6 +98,10 @@ export class Engine {
     }
 
     update(timestamp: DOMHighResTimeStamp) {
+        if (this.resources.hasUpdates()) {
+            this.updateQueryCacheResources();
+        }
+
         const time = this.resources.get<Time>(DefaultResources.Time)!;
         const timestamp_s = timestamp / 1000;
 
@@ -183,8 +187,8 @@ export class Engine {
     private playbackCommands(commands: Commands) {
         commands.playback();
 
-        const dirtyArchetypes = this.entities.getDirtyArchetypes();
-        if (dirtyArchetypes.length === 0) {
+        const newArchetypes = this.entities.getNewArchetypes();
+        if (newArchetypes.length === 0) {
             return;
         }
 
@@ -195,7 +199,7 @@ export class Engine {
 
             let queryResult = this.systemQueryResultCache.get(system);
             if (queryResult) {
-                const needsUpdate = dirtyArchetypes.some(archetype => {
+                const needsUpdate = newArchetypes.some(archetype => {
                     const matchedAll = system.query?.all?.every(component => archetype.components.has(component))
                         || true;
                     if (!matchedAll) {
@@ -230,6 +234,32 @@ export class Engine {
             this.systemQueryResultCache.set(system, queryResult);
         });
 
-        this.entities.clearDirtyArchetypes();
+        this.entities.clearNewArchetypes();
+    }
+
+    private updateQueryCacheResources() {
+        const newResources = this.resources.getNewResources();
+        this.systems.getAll().forEach(system => {
+            if (!system.query?.resources?.some(res => newResources.has(res))) {
+                return;
+            }
+
+            let queryResult = this.systemQueryResultCache.get(system);
+            if (queryResult) {
+                const resources = new Resources(this.resources, system.query.resources);
+
+                const chunks = this.entities.getChunks(system.query);
+
+                const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                const entities = new EntityAccess(this.entities, archetype, chunks);
+                queryResult = {
+                    resources,
+                    entities
+                };
+
+                this.systemQueryResultCache.set(system, queryResult);
+            }
+        });
+        this.resources.handleUpdates();
     }
 }
