@@ -8,6 +8,7 @@ import { Commands, Command } from "./src/Commands";
 import * as Schedule from "./src/Systems/Schedule";
 import { ComponentAccess } from "./src/Entities/ComponentAccess";
 import * as Errors from "./src/Errors";
+import DefaultResources from "./src/Resources/DefaultResources";
 
 export {
     Engine,
@@ -20,5 +21,6 @@ export {
     Commands,
     Command,
     ComponentAccess,
-    Errors
+    DefaultResources,
+    Errors,
 };

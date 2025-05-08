@@ -6,6 +6,7 @@ import { Resources } from "./Resources/Resources";
 import { Start, PreUpdate, Update, PostUpdate, Render, } from "./Systems/Schedule";
 import { SystemManager } from "./Systems/SystemManager";
 import { DefaultRunner } from "./Runner";
+import DefaultResources from "./Resources/DefaultResources";
 export class Engine {
     constructor(runner) {
         this.systems = new SystemManager();
@@ -14,13 +15,13 @@ export class Engine {
         this.systemQueryResultCache = new Map();
         this.update = this.update.bind(this);
         const commands = new Commands(this.entities);
-        this.addResource("commands", commands);
+        this.addResource(DefaultResources.Commands, commands);
         const time = {
             delta: 0,
             current: 0,
             start: 0,
         };
-        this.addResource("time", time);
+        this.addResource(DefaultResources.Time, time);
         this.runner = runner || new DefaultRunner();
     }
     addResource(name, resource) {
@@ -44,11 +45,11 @@ export class Engine {
         this.runner.stop();
     }
     update(timestamp) {
-        const time = this.resources.get("time");
+        const time = this.resources.get(DefaultResources.Time);
         const timestamp_s = timestamp / 1000;
         time.delta = timestamp_s - time.current;
         time.current = timestamp_s;
-        const commands = this.resources.get("commands");
+        const commands = this.resources.get(DefaultResources.Commands);
         this.updateSystems(Start);
         this.playbackCommands(commands);
         this.systems.removeSystems(Start);

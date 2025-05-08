@@ -8,4 +8,5 @@ import { Commands, Command } from "./src/Commands";
 import * as Schedule from "./src/Systems/Schedule";
 import { ComponentAccess } from "./src/Entities/ComponentAccess";
 import * as Errors from "./src/Errors";
-export { Engine, System, Query, QueryResult, Time, Schedule, Entity, Commands, Command, ComponentAccess, Errors };
+import DefaultResources from "./src/Resources/DefaultResources";
+export { Engine, System, Query, QueryResult, Time, Schedule, Entity, Commands, Command, ComponentAccess, DefaultResources, Errors, };

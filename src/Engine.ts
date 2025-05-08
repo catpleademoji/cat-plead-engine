@@ -9,6 +9,8 @@ import { System } from "./Systems/System";
 import { SystemManager } from "./Systems/SystemManager";
 import { Time } from "./Time";
 import { Runner, DefaultRunner } from "./Runner";
+import DefaultResources from "./Resources/DefaultResources";
+
 
 export class Engine {
     private systems: SystemManager;
@@ -30,13 +32,13 @@ export class Engine {
         this.update = this.update.bind(this);
 
         const commands: Commands = new Commands(this.entities);
-        this.addResource("commands", commands);
+        this.addResource(DefaultResources.Commands, commands);
         const time: Time = {
             delta: 0,
             current: 0,
             start: 0,
         };
-        this.addResource("time", time);
+        this.addResource(DefaultResources.Time, time);
         this.runner = runner || new DefaultRunner();
     }
 
@@ -67,12 +69,12 @@ export class Engine {
     }
 
     update(timestamp: DOMHighResTimeStamp) {
-        const time = this.resources.get<Time>("time")!;
+        const time = this.resources.get<Time>(DefaultResources.Time)!;
         const timestamp_s = timestamp / 1000;
         time.delta = timestamp_s - time.current;
         time.current = timestamp_s;
 
-        const commands = this.resources.get<Commands>("commands")!;
+        const commands = this.resources.get<Commands>(DefaultResources.Commands)!;
 
         this.updateSystems(Start);
         this.playbackCommands(commands);
