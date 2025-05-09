@@ -26,6 +26,7 @@ export class Engine {
             start: 0,
             fixedDelta: 0,
         };
+        this.cumulativeFixedDelta = 0;
         this.addResource(DefaultResources.Time, time);
         if (runner && options) {
             this.runner = runner;
@@ -93,12 +94,12 @@ export class Engine {
         this.updateSystems(Schedules.Update);
         this.playbackCommands(commands);
         this.updateSystems(Schedules.PostUpdate);
-        let remainingDelta = delta;
-        while (remainingDelta >= this.fixedTimestep) {
+        this.cumulativeFixedDelta += delta;
+        while (this.cumulativeFixedDelta >= this.fixedTimestep) {
             time.fixedDelta = this.fixedTimestep;
             this.playbackCommands(commands);
             this.updateSystems(Schedules.FixedUpdate);
-            remainingDelta -= this.fixedTimestep;
+            this.cumulativeFixedDelta -= this.fixedTimestep;
         }
         this.playbackCommands(commands);
         this.updateSystems(Schedules.Render);

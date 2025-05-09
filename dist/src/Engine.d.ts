@@ -14,6 +14,7 @@ export declare class Engine {
     private runner;
     private maxTimestep;
     private fixedTimestep;
+    private cumulativeFixedDelta;
     constructor(options?: EngineOptions);
     constructor(runner: Runner, options?: EngineOptions);
     addResource(name: string, resource: unknown): this;
