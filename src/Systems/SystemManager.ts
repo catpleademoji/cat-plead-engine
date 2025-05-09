@@ -1,37 +1,58 @@
 import { Schedule } from "./Schedule";
 import { System } from "./System";
+import { SystemGroup } from "./SystemGroup";
 
 export class SystemManager {
-    private systems: Map<Schedule, System[]>;
+    // private systems: Map<Schedule, System[]>;
+    private systemGroups: Map<Schedule, SystemGroup[]>;
+    private defaultSystemGroups: Map<Schedule, SystemGroup>;
 
     constructor() {
-        this.systems = new Map<Schedule, System[]>();
+        // this.systems = new Map<Schedule, System[]>();
+        this.systemGroups = new Map<Schedule, SystemGroup[]>();
+        this.defaultSystemGroups = new Map<Schedule, SystemGroup>();
     }
 
     add(schedule: Schedule, system: System) {
-        let systems = this.systems.get(schedule);
-        if (!systems) {
-            systems = [];
-            this.systems.set(schedule, systems);
+        let defaultSystemGroup = this.defaultSystemGroups.get(schedule);
+        if (!defaultSystemGroup) {
+            defaultSystemGroup = {
+                systems: [system],
+                canRun: () => true,
+            };
+            this.defaultSystemGroups.set(schedule, defaultSystemGroup);
+            this.systemGroups.set(schedule, [defaultSystemGroup]);
+        } else {
+            defaultSystemGroup.systems.push(system);
         }
-        systems.push(system);
     }
 
-    get(schedule: Schedule): System[] | undefined {
-        return this.systems.get(schedule);
+    addGroup(schedule: Schedule, systemGroup: SystemGroup) {
+        let systemGroups = this.systemGroups.get(schedule);
+        if (!systemGroups) {
+            systemGroups = [];
+            this.systemGroups.set(schedule, systemGroups);
+        }
+        systemGroups.push(systemGroup);
     }
 
-    getAll(): System[] {
-        return [...this.systems.values()].flat()
+    get(schedule: Schedule): SystemGroup[] | undefined {
+        return this.systemGroups.get(schedule);
     }
 
-    remove(schedule: Schedule, system: System) {
-        const systems = this.systems.get(schedule)!;
-        const filteredSystems = systems.filter(x => x === system);
-        this.systems.set(schedule, filteredSystems);
+    getAll(): SystemGroup[] {
+        return [...this.systemGroups.values()].flat()
+    }
+
+    remove(schedule: Schedule, systemGroup: SystemGroup, system: System) {
+        const systemGroups = this.systemGroups.get(schedule)!;
+        const group = systemGroups.find(group => group === systemGroup);
+        if (group) {
+            group.systems = group.systems.filter(x => x === system);
+        }
     }
 
     removeSystems(schedule: Schedule) {
-        this.systems.set(schedule, []);
+        this.systemGroups.set(schedule, []);
     }
 }

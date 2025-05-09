@@ -10,6 +10,7 @@ import { SystemManager } from "./Systems/SystemManager";
 import { Time } from "./Time";
 import { Runner, DefaultRunner } from "./Runner";
 import DefaultResources from "./Resources/DefaultResources";
+import { SystemGroup } from "./Systems/SystemGroup";
 
 export type EngineOptions = {
     maxTimestep: number;
@@ -85,6 +86,11 @@ export class Engine {
         return this;
     }
 
+    addSystemGroup(schedule: Schedule, systemGroup: SystemGroup): this {
+        this.systems.addGroup(schedule, systemGroup);
+        return this;
+    }
+
     run() {
         this.buildSystemQueryCache();
         const time = this.resources.get<Time>("time")!;
@@ -144,43 +150,51 @@ export class Engine {
     }
 
     private updateSystems(schedule: Schedule) {
-        const systems = this.systems.get(schedule);
-        systems?.forEach(system => {
-            if (!system.query) {
-                system.run();
-            } else {
-                const queryResult = this.systemQueryResultCache.get(system)!;
-                if (!queryResult) {
-                    throw new Error("Query result not cached!");
-                }
-
-                if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
-                    return;
-                }
-
-                system.run(queryResult);
+        const systemGroups = this.systems.get(schedule);
+        systemGroups?.forEach(systemGroup => {
+            if (!systemGroup.canRun(this.resources)) {
+                return;
             }
+
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
+                    system.run();
+                } else {
+                    const queryResult = this.systemQueryResultCache.get(system)!;
+                    if (!queryResult) {
+                        throw new Error("Query result not cached!");
+                    }
+
+                    if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
+                        return;
+                    }
+
+                    system.run(queryResult);
+                }
+            })
         })
     }
 
     private buildSystemQueryCache() {
-        this.systems.getAll().forEach(system => {
-            if (!system.query) {
-                return;
-            }
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
+                    return;
+                }
 
-            const resources = new Resources(this.resources, system.query.resources);
+                const resources = new Resources(this.resources, system.query.resources);
 
-            const chunks = this.entities.getChunks(system.query);
+                const chunks = this.entities.getChunks(system.query);
 
-            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityAccess(this.entities, archetype, chunks);
-            const queryResult = {
-                resources,
-                entities
-            };
+                const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                const entities = new EntityAccess(this.entities, archetype, chunks);
+                const queryResult = {
+                    resources,
+                    entities
+                };
 
-            this.systemQueryResultCache.set(system, queryResult);
+                this.systemQueryResultCache.set(system, queryResult);
+            });
         });
     }
 
@@ -192,60 +206,35 @@ export class Engine {
             return;
         }
 
-        this.systems.getAll().forEach(system => {
-            if (!system.query) {
-                return;
-            }
-
-            let queryResult = this.systemQueryResultCache.get(system);
-            if (queryResult) {
-                const needsUpdate = newArchetypes.some(archetype => {
-                    const matchedAll = system.query?.all?.every(component => archetype.components.has(component))
-                        || true;
-                    if (!matchedAll) {
-                        return false;
-                    }
-
-                    const matchedNone = system.query?.none?.every(component => !archetype.components.has(component))
-                        || true;
-                    if (!matchedNone) {
-                        return false;
-                    }
-
-                    return true;
-                });
-
-                if (!needsUpdate) {
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
                     return;
                 }
-            }
 
-            const resources = new Resources(this.resources, system.query.resources);
+                let queryResult = this.systemQueryResultCache.get(system);
+                if (queryResult) {
+                    const needsUpdate = newArchetypes.some(archetype => {
+                        const matchedAll = system.query?.all?.every(component => archetype.components.has(component))
+                            || true;
+                        if (!matchedAll) {
+                            return false;
+                        }
 
-            const chunks = this.entities.getChunks(system.query);
+                        const matchedNone = system.query?.none?.every(component => !archetype.components.has(component))
+                            || true;
+                        if (!matchedNone) {
+                            return false;
+                        }
 
-            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityAccess(this.entities, archetype, chunks);
-            queryResult = {
-                resources,
-                entities
-            };
+                        return true;
+                    });
 
-            this.systemQueryResultCache.set(system, queryResult);
-        });
+                    if (!needsUpdate) {
+                        return;
+                    }
+                }
 
-        this.entities.clearNewArchetypes();
-    }
-
-    private updateQueryCacheResources() {
-        const newResources = this.resources.getNewResources();
-        this.systems.getAll().forEach(system => {
-            if (!system.query?.resources?.some(res => newResources.has(res))) {
-                return;
-            }
-
-            let queryResult = this.systemQueryResultCache.get(system);
-            if (queryResult) {
                 const resources = new Resources(this.resources, system.query.resources);
 
                 const chunks = this.entities.getChunks(system.query);
@@ -258,7 +247,36 @@ export class Engine {
                 };
 
                 this.systemQueryResultCache.set(system, queryResult);
-            }
+            });
+        });
+
+        this.entities.clearNewArchetypes();
+    }
+
+    private updateQueryCacheResources() {
+        const newResources = this.resources.getNewResources();
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                if (!system.query?.resources?.some(res => newResources.has(res))) {
+                    return;
+                }
+
+                let queryResult = this.systemQueryResultCache.get(system);
+                if (queryResult) {
+                    const resources = new Resources(this.resources, system.query.resources);
+
+                    const chunks = this.entities.getChunks(system.query);
+
+                    const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                    const entities = new EntityAccess(this.entities, archetype, chunks);
+                    queryResult = {
+                        resources,
+                        entities
+                    };
+
+                    this.systemQueryResultCache.set(system, queryResult);
+                }
+            });
         });
         this.resources.handleUpdates();
     }

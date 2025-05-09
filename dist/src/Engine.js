@@ -59,6 +59,10 @@ export class Engine {
         this.systems.add(schedule, system);
         return this;
     }
+    addSystemGroup(schedule, systemGroup) {
+        this.systems.addGroup(schedule, systemGroup);
+        return this;
+    }
     run() {
         this.buildSystemQueryCache();
         const time = this.resources.get("time");
@@ -102,37 +106,44 @@ export class Engine {
         this.playbackCommands(commands);
     }
     updateSystems(schedule) {
-        const systems = this.systems.get(schedule);
-        systems === null || systems === void 0 ? void 0 : systems.forEach(system => {
-            if (!system.query) {
-                system.run();
+        const systemGroups = this.systems.get(schedule);
+        systemGroups === null || systemGroups === void 0 ? void 0 : systemGroups.forEach(systemGroup => {
+            if (!systemGroup.canRun(this.resources)) {
+                return;
             }
-            else {
-                const queryResult = this.systemQueryResultCache.get(system);
-                if (!queryResult) {
-                    throw new Error("Query result not cached!");
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
+                    system.run();
                 }
-                if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
-                    return;
+                else {
+                    const queryResult = this.systemQueryResultCache.get(system);
+                    if (!queryResult) {
+                        throw new Error("Query result not cached!");
+                    }
+                    if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
+                        return;
+                    }
+                    system.run(queryResult);
                 }
-                system.run(queryResult);
-            }
+            });
         });
     }
     buildSystemQueryCache() {
-        this.systems.getAll().forEach(system => {
-            if (!system.query) {
-                return;
-            }
-            const resources = new Resources(this.resources, system.query.resources);
-            const chunks = this.entities.getChunks(system.query);
-            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityAccess(this.entities, archetype, chunks);
-            const queryResult = {
-                resources,
-                entities
-            };
-            this.systemQueryResultCache.set(system, queryResult);
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
+                    return;
+                }
+                const resources = new Resources(this.resources, system.query.resources);
+                const chunks = this.entities.getChunks(system.query);
+                const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                const entities = new EntityAccess(this.entities, archetype, chunks);
+                const queryResult = {
+                    resources,
+                    entities
+                };
+                this.systemQueryResultCache.set(system, queryResult);
+            });
         });
     }
     playbackCommands(commands) {
@@ -141,51 +152,31 @@ export class Engine {
         if (newArchetypes.length === 0) {
             return;
         }
-        this.systems.getAll().forEach(system => {
-            if (!system.query) {
-                return;
-            }
-            let queryResult = this.systemQueryResultCache.get(system);
-            if (queryResult) {
-                const needsUpdate = newArchetypes.some(archetype => {
-                    var _a, _b, _c, _d;
-                    const matchedAll = ((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.all) === null || _b === void 0 ? void 0 : _b.every(component => archetype.components.has(component)))
-                        || true;
-                    if (!matchedAll) {
-                        return false;
-                    }
-                    const matchedNone = ((_d = (_c = system.query) === null || _c === void 0 ? void 0 : _c.none) === null || _d === void 0 ? void 0 : _d.every(component => !archetype.components.has(component)))
-                        || true;
-                    if (!matchedNone) {
-                        return false;
-                    }
-                    return true;
-                });
-                if (!needsUpdate) {
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                if (!system.query) {
                     return;
                 }
-            }
-            const resources = new Resources(this.resources, system.query.resources);
-            const chunks = this.entities.getChunks(system.query);
-            const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
-            const entities = new EntityAccess(this.entities, archetype, chunks);
-            queryResult = {
-                resources,
-                entities
-            };
-            this.systemQueryResultCache.set(system, queryResult);
-        });
-        this.entities.clearNewArchetypes();
-    }
-    updateQueryCacheResources() {
-        const newResources = this.resources.getNewResources();
-        this.systems.getAll().forEach(system => {
-            var _a, _b;
-            if (!((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.resources) === null || _b === void 0 ? void 0 : _b.some(res => newResources.has(res)))) {
-                return;
-            }
-            let queryResult = this.systemQueryResultCache.get(system);
-            if (queryResult) {
+                let queryResult = this.systemQueryResultCache.get(system);
+                if (queryResult) {
+                    const needsUpdate = newArchetypes.some(archetype => {
+                        var _a, _b, _c, _d;
+                        const matchedAll = ((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.all) === null || _b === void 0 ? void 0 : _b.every(component => archetype.components.has(component)))
+                            || true;
+                        if (!matchedAll) {
+                            return false;
+                        }
+                        const matchedNone = ((_d = (_c = system.query) === null || _c === void 0 ? void 0 : _c.none) === null || _d === void 0 ? void 0 : _d.every(component => !archetype.components.has(component)))
+                            || true;
+                        if (!matchedNone) {
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (!needsUpdate) {
+                        return;
+                    }
+                }
                 const resources = new Resources(this.resources, system.query.resources);
                 const chunks = this.entities.getChunks(system.query);
                 const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
@@ -195,7 +186,31 @@ export class Engine {
                     entities
                 };
                 this.systemQueryResultCache.set(system, queryResult);
-            }
+            });
+        });
+        this.entities.clearNewArchetypes();
+    }
+    updateQueryCacheResources() {
+        const newResources = this.resources.getNewResources();
+        this.systems.getAll().forEach(systemGroup => {
+            systemGroup.systems.forEach(system => {
+                var _a, _b;
+                if (!((_b = (_a = system.query) === null || _a === void 0 ? void 0 : _a.resources) === null || _b === void 0 ? void 0 : _b.some(res => newResources.has(res)))) {
+                    return;
+                }
+                let queryResult = this.systemQueryResultCache.get(system);
+                if (queryResult) {
+                    const resources = new Resources(this.resources, system.query.resources);
+                    const chunks = this.entities.getChunks(system.query);
+                    const archetype = new Set([...system.query.all || [], ...system.query.any || []]);
+                    const entities = new EntityAccess(this.entities, archetype, chunks);
+                    queryResult = {
+                        resources,
+                        entities
+                    };
+                    this.systemQueryResultCache.set(system, queryResult);
+                }
+            });
         });
         this.resources.handleUpdates();
     }

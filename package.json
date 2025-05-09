@@ -5,10 +5,11 @@
     "url": "https://catpleademoji.neocities.org"
   },
   "private": true,
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "clean": "rm dist -R",
     "test": "mocha"
   },
   "devDependencies": {

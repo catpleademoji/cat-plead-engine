@@ -1,6 +1,7 @@
 import { Schedule } from "./Systems/Schedule";
 import { System } from "./Systems/System";
 import { Runner } from "./Runner";
+import { SystemGroup } from "./Systems/SystemGroup";
 export type EngineOptions = {
     maxTimestep: number;
     fixedTimestep: number;
@@ -18,6 +19,7 @@ export declare class Engine {
     addResource(name: string, resource: unknown): this;
     getResource<T>(name: string): T | undefined;
     addSystem(schedule: Schedule, system: System): this;
+    addSystemGroup(schedule: Schedule, systemGroup: SystemGroup): this;
     run(): void;
     stop(): void;
     update(timestamp: DOMHighResTimeStamp): void;

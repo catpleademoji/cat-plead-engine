@@ -1,27 +1,45 @@
 export class SystemManager {
     constructor() {
-        this.systems = new Map();
+        // this.systems = new Map<Schedule, System[]>();
+        this.systemGroups = new Map();
+        this.defaultSystemGroups = new Map();
     }
     add(schedule, system) {
-        let systems = this.systems.get(schedule);
-        if (!systems) {
-            systems = [];
-            this.systems.set(schedule, systems);
+        let defaultSystemGroup = this.defaultSystemGroups.get(schedule);
+        if (!defaultSystemGroup) {
+            defaultSystemGroup = {
+                systems: [system],
+                canRun: () => true,
+            };
+            this.defaultSystemGroups.set(schedule, defaultSystemGroup);
+            this.systemGroups.set(schedule, [defaultSystemGroup]);
         }
-        systems.push(system);
+        else {
+            defaultSystemGroup.systems.push(system);
+        }
+    }
+    addGroup(schedule, systemGroup) {
+        let systemGroups = this.systemGroups.get(schedule);
+        if (!systemGroups) {
+            systemGroups = [];
+            this.systemGroups.set(schedule, systemGroups);
+        }
+        systemGroups.push(systemGroup);
     }
     get(schedule) {
-        return this.systems.get(schedule);
+        return this.systemGroups.get(schedule);
     }
     getAll() {
-        return [...this.systems.values()].flat();
+        return [...this.systemGroups.values()].flat();
     }
-    remove(schedule, system) {
-        const systems = this.systems.get(schedule);
-        const filteredSystems = systems.filter(x => x === system);
-        this.systems.set(schedule, filteredSystems);
+    remove(schedule, systemGroup, system) {
+        const systemGroups = this.systemGroups.get(schedule);
+        const group = systemGroups.find(group => group === systemGroup);
+        if (group) {
+            group.systems = group.systems.filter(x => x === system);
+        }
     }
     removeSystems(schedule) {
-        this.systems.set(schedule, []);
+        this.systemGroups.set(schedule, []);
     }
 }
