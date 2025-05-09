@@ -1,2 +1,4 @@
-declare const _default: Readonly<Record<string, string>>;
-export default _default;
+export declare const DefaultResources: {
+    Time: string;
+    Commands: string;
+};

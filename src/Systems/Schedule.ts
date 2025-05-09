@@ -1,17 +1,17 @@
 export type Schedule = string;
 
-export const Start: Schedule = "Start";
-export const PreUpdate: Schedule = "PreUpdate";
-export const Update: Schedule = "Update";
-export const PostUpdate: Schedule = "PostUpdate";
-export const Render: Schedule = "Render";
-export const FixedUpdate = "FixedUpdate";
+const Start: Schedule = "Start";
+const PreUpdate: Schedule = "PreUpdate";
+const Update: Schedule = "Update";
+const PostUpdate: Schedule = "PostUpdate";
+const Render: Schedule = "Render";
+const FixedUpdate = "FixedUpdate";
 
-export default {
+export const Schedules = {
     Start,
     PreUpdate,
     Update,
     PostUpdate,
     Render,
     FixedUpdate,
-} as Readonly<Record<string, Schedule>>;
+};

@@ -4,7 +4,7 @@ import spies from "chai-spies";
 let chai = use(spies);
 
 import { Engine } from "../src/Engine";
-import { Start, Update } from "../src/Systems/Schedule";
+import { Schedules } from "../src/Systems/Schedule";
 import { System } from "../src/Systems/System";
 import { QueryResult } from "../src/Queries/QueryResult";
 import { Commands } from "../src/Commands";
@@ -17,7 +17,7 @@ const dummyRunner: Runner = {
 
 describe("Engine", () => {
 
-    describe("should run Start system", () => {
+    describe("should run Schedules.Start system", () => {
         it("when system has empty query", () => {
             const system = {
                 run() { }
@@ -26,7 +26,7 @@ describe("Engine", () => {
             const spy = chai.spy.on(system, "run");
 
             new Engine(dummyRunner)
-                .addSystem(Start, system)
+                .addSystem(Schedules.Start, system)
                 .run();
 
             expect(spy).to.have.been.called();
@@ -41,7 +41,7 @@ describe("Engine", () => {
             const spy = chai.spy.on(system, "run");
 
             new Engine(dummyRunner)
-                .addSystem(Start, system)
+                .addSystem(Schedules.Start, system)
                 .addResource("foo", {})
                 .run();
 
@@ -49,7 +49,7 @@ describe("Engine", () => {
         });
     });
 
-    describe("should not run Start system", () => {
+    describe("should not run Schedules.Start system", () => {
         it("when system has resource query where no matching resource exists", () => {
             const system: System = {
                 query: { resources: ["foo"] },
@@ -59,7 +59,7 @@ describe("Engine", () => {
             const spy = chai.spy.on(system, "run");
 
             new Engine(dummyRunner)
-                .addSystem(Start, system)
+                .addSystem(Schedules.Start, system)
                 .run();
 
             expect(spy).to.not.have.been.called();
@@ -74,7 +74,7 @@ describe("Engine", () => {
             const spy = chai.spy.on(system, "run");
 
             new Engine(dummyRunner)
-                .addSystem(Start, system)
+                .addSystem(Schedules.Start, system)
                 .run();
 
             expect(spy).to.not.have.been.called();
@@ -90,7 +90,7 @@ describe("Engine", () => {
 
             const engine = new Engine(dummyRunner)
                 .addResource("foo", [])
-                .addSystem(Update, system);
+                .addSystem(Schedules.Update, system);
 
             const spy = chai.spy.on(system, "run");
 
@@ -122,8 +122,8 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, initSystem)
-                .addSystem(Update, system);
+                .addSystem(Schedules.Start, initSystem)
+                .addSystem(Schedules.Update, system);
 
             const spy = chai.spy.on(system, "run");
 
@@ -153,8 +153,8 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, initSystem)
-                .addSystem(Update, system);
+                .addSystem(Schedules.Start, initSystem)
+                .addSystem(Schedules.Update, system);
 
             const spy = chai.spy.on(system, "run");
 
@@ -184,8 +184,8 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, initSystem)
-                .addSystem(Update, system);
+                .addSystem(Schedules.Start, initSystem)
+                .addSystem(Schedules.Update, system);
 
             const spy = chai.spy.on(system, "run");
 
@@ -204,7 +204,7 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Update, system);
+                .addSystem(Schedules.Update, system);
 
             const spy = chai.spy.on(system, "run");
 
@@ -226,8 +226,8 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Update, systemA)
-                .addSystem(Update, systemB);
+                .addSystem(Schedules.Update, systemA)
+                .addSystem(Schedules.Update, systemB);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
@@ -271,8 +271,8 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, systemA)
-                .addSystem(Update, systemB);
+                .addSystem(Schedules.Start, systemA)
+                .addSystem(Schedules.Update, systemB);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
@@ -317,9 +317,9 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, systemA)
-                .addSystem(Update, systemB)
-                .addSystem(Update, systemC);
+                .addSystem(Schedules.Start, systemA)
+                .addSystem(Schedules.Update, systemB)
+                .addSystem(Schedules.Update, systemC);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
@@ -376,9 +376,9 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, systemA)
-                .addSystem(Update, systemB)
-                .addSystem(Update, systemC);
+                .addSystem(Schedules.Start, systemA)
+                .addSystem(Schedules.Update, systemB)
+                .addSystem(Schedules.Update, systemC);
 
             const spyA = chai.spy.on(systemA, "run");
             const spyB = chai.spy.on(systemB, "run");
@@ -431,9 +431,9 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, systemA)
-                .addSystem(Update, systemB)
-                .addSystem(Update, systemC);
+                .addSystem(Schedules.Start, systemA)
+                .addSystem(Schedules.Update, systemB)
+                .addSystem(Schedules.Update, systemC);
 
             const spyB = chai.spy.on(systemB, "run");
             const spyC = chai.spy.on(systemC, "run");
@@ -465,8 +465,8 @@ describe("Engine", () => {
             const updateSystemSpy = chai.spy.on(updateSystem, "run");
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, startSystem)
-                .addSystem(Update, updateSystem)
+                .addSystem(Schedules.Start, startSystem)
+                .addSystem(Schedules.Update, updateSystem)
                 .addResource("foo", {});
 
             engine.run();
@@ -534,10 +534,10 @@ describe("Engine", () => {
             };
 
             const engine = new Engine(dummyRunner)
-                .addSystem(Start, createEntitiesOnStartSystem)
-                .addSystem(Update, updateSystem)
-                .addSystem(Update, destroyEntitiesSystem)
-                .addSystem(Update, createEntitiesSystem);
+                .addSystem(Schedules.Start, createEntitiesOnStartSystem)
+                .addSystem(Schedules.Update, updateSystem)
+                .addSystem(Schedules.Update, destroyEntitiesSystem)
+                .addSystem(Schedules.Update, createEntitiesSystem);
 
             engine.run();
             engine.update(0);

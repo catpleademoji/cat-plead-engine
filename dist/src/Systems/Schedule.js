@@ -1,10 +1,10 @@
-export const Start = "Start";
-export const PreUpdate = "PreUpdate";
-export const Update = "Update";
-export const PostUpdate = "PostUpdate";
-export const Render = "Render";
-export const FixedUpdate = "FixedUpdate";
-export default {
+const Start = "Start";
+const PreUpdate = "PreUpdate";
+const Update = "Update";
+const PostUpdate = "PostUpdate";
+const Render = "Render";
+const FixedUpdate = "FixedUpdate";
+export const Schedules = {
     Start,
     PreUpdate,
     Update,

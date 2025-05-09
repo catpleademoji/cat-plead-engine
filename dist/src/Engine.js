@@ -3,12 +3,12 @@ import { EntityManager } from "./Entities/EntityManager";
 import { EntityAccess } from "./Entities/EntityAccess";
 import { ResourceManager } from "./Resources/ResourceManager";
 import { Resources } from "./Resources/Resources";
-import Schedules from "./Systems/Schedule";
+import { Schedules } from "./Systems/Schedule";
 import { SystemManager } from "./Systems/SystemManager";
 import { DefaultRunner } from "./Runner";
-import DefaultResources from "./Resources/DefaultResources";
+import { DefaultResources } from "./Resources/DefaultResources";
 const DefaultOptions = {
-    maxTimestep: 1 / 60 * 100,
+    maxTimestep: 1 / 60 * 5,
     fixedTimestep: 1 / 60,
 };
 export class Engine {
@@ -85,9 +85,8 @@ export class Engine {
         time.delta = delta;
         time.current = timestamp_s;
         const commands = this.resources.get(DefaultResources.Commands);
-        this.updateSystems(Schedules.Start);
+        this.runStartSystems();
         this.playbackCommands(commands);
-        this.systems.removeSystems(Schedules.Start);
         this.playbackCommands(commands);
         this.updateSystems(Schedules.PreUpdate);
         this.playbackCommands(commands);
@@ -104,6 +103,31 @@ export class Engine {
         this.playbackCommands(commands);
         this.updateSystems(Schedules.Render);
         this.playbackCommands(commands);
+    }
+    runStartSystems() {
+        const systemGroups = this.systems.get(Schedules.Start);
+        systemGroups === null || systemGroups === void 0 ? void 0 : systemGroups.forEach(systemGroup => {
+            if (!systemGroup.canRun(this.resources)) {
+                return;
+            }
+            const unrunSystems = systemGroup.systems.filter(system => {
+                if (!system.query) {
+                    system.run();
+                }
+                else {
+                    const queryResult = this.systemQueryResultCache.get(system);
+                    if (!queryResult) {
+                        throw new Error("Query result not cached!");
+                    }
+                    if (queryResult.resources.count === 0 && queryResult.entities.count() === 0) {
+                        return true;
+                    }
+                    system.run(queryResult);
+                }
+                return false;
+            });
+            systemGroup.systems = unrunSystems;
+        });
     }
     updateSystems(schedule) {
         const systemGroups = this.systems.get(schedule);

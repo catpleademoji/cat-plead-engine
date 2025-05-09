@@ -23,6 +23,7 @@ export declare class Engine {
     run(): void;
     stop(): void;
     update(timestamp: DOMHighResTimeStamp): void;
+    private runStartSystems;
     private updateSystems;
     private buildSystemQueryCache;
     private playbackCommands;

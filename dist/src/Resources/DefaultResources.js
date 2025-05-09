@@ -1,6 +1,6 @@
 const Time = "time";
 const Commands = "commands";
-export default {
+export const DefaultResources = {
     Time,
     Commands
 };
