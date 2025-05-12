@@ -12,7 +12,13 @@ export class SystemManager {
                 canRun: () => true,
             };
             this.defaultSystemGroups.set(schedule, defaultSystemGroup);
-            this.systemGroups.set(schedule, [defaultSystemGroup]);
+            const systemGroups = this.systemGroups.get(schedule);
+            if (systemGroups) {
+                this.systemGroups.set(schedule, [defaultSystemGroup, ...systemGroups]);
+            }
+            else {
+                this.systemGroups.set(schedule, [defaultSystemGroup]);
+            }
         }
         else {
             defaultSystemGroup.systems.push(system);
