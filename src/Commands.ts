@@ -39,9 +39,9 @@ class SpawnFromComponents implements Command {
 
 class AddComponent implements Command {
     entity: Entity;
-    component: Component;
+    component: Component | Component[];
 
-    constructor(entity: Entity, component: Component) {
+    constructor(entity: Entity, component: Component | Component[]) {
         this.entity = entity;
         this.component = component;
     }
@@ -53,10 +53,12 @@ class AddComponent implements Command {
 
 class SetComponent implements Command {
     entity: Entity;
-    component: Component;
-    value: unknown;
+    component: Component | ComponentValueMap;
+    value?: unknown;
 
-    constructor(entity: Entity, component: Component, value: unknown) {
+    constructor(entity: Entity, component: Component, value: unknown);
+    constructor(entity: Entity, componentValues: ComponentValueMap);
+    constructor(entity: Entity, component: Component | ComponentValueMap, value?: unknown) {
         this.entity = entity;
         this.component = component;
         this.value = value;
@@ -69,9 +71,9 @@ class SetComponent implements Command {
 
 class RemoveComponent implements Command {
     entity: Entity;
-    component: Component;
+    component: Component | Component[];
 
-    constructor(entity: Entity, component: Component) {
+    constructor(entity: Entity, component: Component | Component[]) {
         this.entity = entity;
         this.component = component;
     }

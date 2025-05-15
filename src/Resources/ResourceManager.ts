@@ -16,6 +16,10 @@ export class ResourceManager {
         return this.resources.get(name) as T;
     }
 
+    remove(name: string) {
+        this.resources.delete(name);
+    }
+
     hasUpdates(): boolean {
         return this.newResources.size > 0;
     }

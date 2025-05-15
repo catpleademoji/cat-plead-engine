@@ -3,12 +3,10 @@ import { System } from "./System";
 import { SystemGroup } from "./SystemGroup";
 
 export class SystemManager {
-    // private systems: Map<Schedule, System[]>;
     private systemGroups: Map<Schedule, SystemGroup[]>;
     private defaultSystemGroups: Map<Schedule, SystemGroup>;
 
     constructor() {
-        // this.systems = new Map<Schedule, System[]>();
         this.systemGroups = new Map<Schedule, SystemGroup[]>();
         this.defaultSystemGroups = new Map<Schedule, SystemGroup>();
     }
@@ -47,6 +45,10 @@ export class SystemManager {
 
     getAll(): SystemGroup[] {
         return [...this.systemGroups.values()].flat()
+    }
+
+    getDefaultSystemGroup(schedule: Schedule): SystemGroup | undefined {
+        return this.defaultSystemGroups.get(schedule);
     }
 
     remove(schedule: Schedule, systemGroup: SystemGroup, system: System) {

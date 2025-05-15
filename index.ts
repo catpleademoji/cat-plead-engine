@@ -1,15 +1,16 @@
+import { Commands, Command } from "./src/Commands";
 import { Engine, EngineOptions } from "./src/Engine";
+import { ComponentAccess } from "./src/Entities/ComponentAccess";
+import { Entity } from "./src/Entities/Entity";
+import * as Errors from "./src/Errors";
 import { Query } from "./src/Queries/Query";
 import { QueryResult } from "./src/Queries/QueryResult";
+import { DefaultResources } from "./src/Resources/DefaultResources";
+import { ResourceManager } from "./src/Resources/ResourceManager";
+import { Schedule, Schedules } from "./src/Systems/Schedule";
 import { System } from "./src/Systems/System";
 import { SystemGroup } from "./src/Systems/SystemGroup";
-import { Schedule, Schedules } from "./src/Systems/Schedule";
 import { Time } from "./src/Time";
-import { Entity } from "./src/Entities/Entity";
-import { Commands, Command } from "./src/Commands";
-import { ComponentAccess } from "./src/Entities/ComponentAccess";
-import * as Errors from "./src/Errors";
-import { DefaultResources } from "./src/Resources/DefaultResources";
 
 export {
     Engine,
@@ -18,6 +19,7 @@ export {
     SystemGroup,
     Query,
     QueryResult,
+    ResourceManager,
     Time,
     Schedule,
     Schedules,

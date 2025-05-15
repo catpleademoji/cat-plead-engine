@@ -2,6 +2,7 @@ export type Runner = {
     start(callback: (timestamp: DOMHighResTimeStamp) => void): void;
     stop(): void;
 };
+
 export class DefaultRunner implements Runner {
     animationFrameId: number | undefined;
     callback?: (timestamp: DOMHighResTimeStamp) => void;
