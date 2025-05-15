@@ -19,8 +19,12 @@ export declare class Engine {
     constructor(runner: Runner, options?: EngineOptions);
     addResource(name: string, resource: unknown): this;
     getResource<T>(name: string): T | undefined;
+    removeResource(name: string): void;
     addSystem(schedule: Schedule, system: System): this;
     addSystemGroup(schedule: Schedule, systemGroup: SystemGroup): this;
+    getDefaultSystemGroup(schedule: Schedule): SystemGroup | undefined;
+    removeSystem(schedule: Schedule, systemGroup: SystemGroup, system: System): void;
+    clearEntities(): void;
     run(): void;
     stop(): void;
     update(timestamp: DOMHighResTimeStamp): void;

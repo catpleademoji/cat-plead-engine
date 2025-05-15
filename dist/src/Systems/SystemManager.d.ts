@@ -9,6 +9,7 @@ export declare class SystemManager {
     addGroup(schedule: Schedule, systemGroup: SystemGroup): void;
     get(schedule: Schedule): SystemGroup[] | undefined;
     getAll(): SystemGroup[];
+    getDefaultSystemGroup(schedule: Schedule): SystemGroup | undefined;
     remove(schedule: Schedule, systemGroup: SystemGroup, system: System): void;
     removeSystems(schedule: Schedule): void;
 }

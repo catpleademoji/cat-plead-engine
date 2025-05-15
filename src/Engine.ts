@@ -84,6 +84,10 @@ export class Engine {
         return this.resources.get<T>(name);
     }
 
+    removeResource(name: string) {
+        this.resources.remove(name);
+    }
+
     addSystem(schedule: Schedule, system: System): this {
         this.systems.add(schedule, system);
         return this;
@@ -92,6 +96,18 @@ export class Engine {
     addSystemGroup(schedule: Schedule, systemGroup: SystemGroup): this {
         this.systems.addGroup(schedule, systemGroup);
         return this;
+    }
+
+    getDefaultSystemGroup(schedule: Schedule) {
+        return this.systems.getDefaultSystemGroup(schedule);
+    }
+
+    removeSystem(schedule: Schedule, systemGroup: SystemGroup, system: System) {
+        this.systems.remove(schedule, systemGroup, system);
+    }
+
+    clearEntities() {
+        this.entities.clear();
     }
 
     run() {

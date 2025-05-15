@@ -1,6 +1,5 @@
 export class SystemManager {
     constructor() {
-        // this.systems = new Map<Schedule, System[]>();
         this.systemGroups = new Map();
         this.defaultSystemGroups = new Map();
     }
@@ -37,6 +36,9 @@ export class SystemManager {
     }
     getAll() {
         return [...this.systemGroups.values()].flat();
+    }
+    getDefaultSystemGroup(schedule) {
+        return this.defaultSystemGroups.get(schedule);
     }
     remove(schedule, systemGroup, system) {
         const systemGroups = this.systemGroups.get(schedule);

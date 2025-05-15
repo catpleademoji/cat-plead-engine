@@ -56,6 +56,9 @@ export class Engine {
     getResource(name) {
         return this.resources.get(name);
     }
+    removeResource(name) {
+        this.resources.remove(name);
+    }
     addSystem(schedule, system) {
         this.systems.add(schedule, system);
         return this;
@@ -63,6 +66,15 @@ export class Engine {
     addSystemGroup(schedule, systemGroup) {
         this.systems.addGroup(schedule, systemGroup);
         return this;
+    }
+    getDefaultSystemGroup(schedule) {
+        return this.systems.getDefaultSystemGroup(schedule);
+    }
+    removeSystem(schedule, systemGroup, system) {
+        this.systems.remove(schedule, systemGroup, system);
+    }
+    clearEntities() {
+        this.entities.clear();
     }
     run() {
         this.buildSystemQueryCache();

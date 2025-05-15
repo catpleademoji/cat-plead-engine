@@ -6,8 +6,8 @@ import { EntityForeachCallbackFunc } from "./EntityAccess";
 import { ComponentAccess } from "./ComponentAccess";
 export declare class Chunk {
     readonly archetype: ArchetypeRecord;
-    private _entities;
-    private _componentTable;
+    private entities;
+    private componentTable;
     private _count;
     constructor(archetype: ArchetypeRecord);
     get count(): number;
@@ -19,5 +19,6 @@ export declare class Chunk {
     setComponent(index: number, component: Component, value: unknown): void;
     getComponent(index: number, component: Component): unknown;
     getEntity(index: number): Entity;
+    clear(): void;
     foreach(componentAccess: ComponentAccess, func: EntityForeachCallbackFunc): void;
 }

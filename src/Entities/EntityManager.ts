@@ -30,6 +30,13 @@ export class EntityManager {
         this.count = 0;
     }
 
+    clear() {
+        this.count = 0;
+        this.chunks.forEach(chunk => {
+            chunk.clear();
+        });
+    }
+
     exists(entity: Entity | null): boolean {
         if (!entity) {
             return false;
@@ -129,29 +136,49 @@ export class EntityManager {
         this.moveChunk(entity, newChunkIndex)
     }
 
-    setComponent(entity: Entity, component: Component, value: unknown) {
-        if (!this.hasComponent(entity, component)) {
-            this.addComponent(entity, component);
-        }
+    setComponent(entity: Entity, components: Component | ComponentValueMap, value?: unknown) {
+        if (typeof components === "string") {
+            if (!this.hasComponent(entity, components)) {
+                this.addComponent(entity, components);
+            }
 
-        const record = this.entities[entity.index];
-        const chunk = this.chunks[record.chunkIndex];
-        chunk.setComponent(record.rowIndex, component, value);
+            const record = this.entities[entity.index];
+            const chunk = this.chunks[record.chunkIndex];
+            chunk.setComponent(record.rowIndex, components, value);
+        } else {
+            this.addComponent(entity, Object.keys(components));
+            const record = this.entities[entity.index];
+            const chunk = this.chunks[record.chunkIndex];
+            Object.entries(components).forEach(([component, value]) => {
+                chunk.setComponent(record.rowIndex, component, value);
+            })
+        }
     }
 
-    removeComponent(entity: Entity, component: Component) {
+    removeComponent(entity: Entity, components: Component | Component[]) {
         if (!this.exists(entity)) {
             throw new InvalidEntityError();
         }
 
         const record = this.entities[entity.index];
         const chunk = this.chunks[record.chunkIndex];
-        if (!chunk.archetype.components.has(component)) {
-            return;
+
+        if (Array.isArray(components)) {
+            if (!components.every(component => chunk.archetype.components.has(component))) {
+                return;
+            }
+        } else {
+            if (!chunk.archetype.components.has(components)) {
+                return;
+            }
         }
 
         const archetype = new Set(chunk.archetype.components);
-        archetype.delete(component);
+        if (Array.isArray(components)) {
+            components.forEach(component => archetype.delete(component));
+        } else {
+            archetype.delete(components);
+        }
 
         const newChunkIndex = this.getChunk(archetype);
         this.moveChunk(entity, newChunkIndex)

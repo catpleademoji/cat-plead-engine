@@ -10,6 +10,9 @@ export class ResourceManager {
     get(name) {
         return this.resources.get(name);
     }
+    remove(name) {
+        this.resources.delete(name);
+    }
     hasUpdates() {
         return this.newResources.size > 0;
     }

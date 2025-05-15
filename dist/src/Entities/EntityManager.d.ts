@@ -12,13 +12,14 @@ export declare class EntityManager {
     private newArchetypes;
     private freeEntities;
     constructor();
+    clear(): void;
     exists(entity: Entity | null): boolean;
     spawnEmpty(): Entity;
     spawnFromEntity(entity: Entity): Entity;
     spawnFromComponents(components: ComponentValueMap): Entity;
     addComponent(entity: Entity, components: Component | Component[]): void;
-    setComponent(entity: Entity, component: Component, value: unknown): void;
-    removeComponent(entity: Entity, component: Component): void;
+    setComponent(entity: Entity, components: Component | ComponentValueMap, value?: unknown): void;
+    removeComponent(entity: Entity, components: Component | Component[]): void;
     moveChunk(entity: Entity, newChunkIndex: number): void;
     hasComponent(entity: Entity, component: Component): boolean;
     private getEntity;
