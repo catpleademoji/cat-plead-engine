@@ -3,5 +3,6 @@ import { System } from "./System";
 
 export type SystemGroup = {
     systems: System[];
+    resetSystems?: () => void;
     canRun(resources: ResourceManager): boolean;
 }
